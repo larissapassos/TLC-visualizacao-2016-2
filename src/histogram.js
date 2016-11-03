@@ -1,18 +1,22 @@
 var margin = {top: 20, right: 20, bottom: 40, left: 60};
-var w = 700 - margin.left - margin.right;
+var w = 500 - margin.left - margin.right;
 var h = 500 - margin.top - margin.bottom;
 var histSvg;
 
 var selectedData;
 var dataLoaded = false;
 
-var barWidth = 20;
-var barPadding = 2;
+var barWidth = 40;
+
+function prettyDay(day) {
+    var days = ["Sun.", "Mon.", "Tue.", "Wed.", "Thu.", "Fri.", "Sat."];
+    return days[day];
+}
 
 function groupTrips() {
     var timeParser = d3.timeParse("%Y-%m-%d %H:%M:%S");
     return selectedData.reduce(function(counts, curr) {
-                        var day = timeParser(curr.lpep_pickup_datetime).getDate();
+                        var day = timeParser(curr.lpep_pickup_datetime).getDay();
                         counts[day] ? counts[day]++ : counts[day] = 1;
                             return counts;
                     }, {});
@@ -30,7 +34,7 @@ function renderHistogram() {
 
         var x = d3.scalePoint()
                     .domain(Object.keys(tripsPerDay))
-                    .range([0, w]);
+                    .range([0, w - margin.right]);
         
         var y = d3.scaleLinear()
                     .domain([0, d3.max(tripsArray, function(d) { return d.count; })])
@@ -79,7 +83,7 @@ function renderHistogram() {
         histSvg.append("g")
             .attr("id","xAxis")
             .attr("transform","translate(0," + h + ")")
-            .call(d3.axisBottom(x));
+            .call(d3.axisBottom(x).tickFormat(function(d) { return prettyDay(d); }));
 
         histSvg.append("g")
             .attr("id","yAxis")
