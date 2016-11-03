@@ -1,12 +1,13 @@
-var margin = {top: 20, right: 20, bottom: 40, left: 60};
-var w = 500 - margin.left - margin.right;
-var h = 500 - margin.top - margin.bottom;
+var marginHist = {top: 20, right: 20, bottom: 40, left: 60};
+var wHist = 500 - marginHist.left - marginHist.right;
+var hHist = 500 - marginHist.top - marginHist.bottom;
 var histSvg;
 
 var selectedData;
 var dataLoaded = false;
 
 var barWidth = 40;
+var csv_path_hist = "../assets/tlc/green/subset.csv";
 
 function prettyDay(day) {
     var days = ["Sun.", "Mon.", "Tue.", "Wed.", "Thu.", "Fri.", "Sat."];
@@ -24,21 +25,21 @@ function groupTrips() {
 
 function renderHistogram() {
     if (dataLoaded) {
-        var tripsPerDay = groupTrips();
+        var tripsPerDayHist = groupTrips();
     
         var tripsArray = [];
-        Object.keys(tripsPerDay).forEach(function(day) {
-            tripsArray.push({'day': day, 'count': tripsPerDay[day]});
+        Object.keys(tripsPerDayHist).forEach(function(day) {
+            tripsArray.push({'day': day, 'count': tripsPerDayHist[day]});
         });
         tripsArray.sort(function(a, b) { return a.day - b.day; });
 
         var x = d3.scalePoint()
-                    .domain(Object.keys(tripsPerDay))
-                    .range([0, w - margin.right]);
+                    .domain(Object.keys(tripsPerDayHist))
+                    .range([0, wHist - marginHist.right]);
         
         var y = d3.scaleLinear()
                     .domain([0, d3.max(tripsArray, function(d) { return d.count; })])
-                    .range([h, 0]);
+                    .range([hHist, 0]);
         
         var histBind = histSvg.selectAll("rect")
                                 .data(tripsArray);
@@ -54,7 +55,7 @@ function renderHistogram() {
             })
             .attr("width", barWidth)
             .attr("height", function(d) {
-                return h - y(d.count);
+                return hHist - y(d.count);
             })
             .attr("fill", "green")
             .attr("stroke-width", "1px")
@@ -74,19 +75,19 @@ function renderHistogram() {
             })
             .attr("width", barWidth)
             .attr("height", function(d) {
-                return h - y(d.count);
+                return hHist - y(d.count);
             })
             .attr("fill", "green")
             .attr("stroke-width", "1px")
             .attr("stroke","black");
         
         histSvg.append("g")
-            .attr("id","xAxis")
-            .attr("transform","translate(0," + h + ")")
+            .attr("id","xAxisHist")
+            .attr("transform","translate(0," + hHist + ")")
             .call(d3.axisBottom(x).tickFormat(function(d) { return prettyDay(d); }));
 
         histSvg.append("g")
-            .attr("id","yAxis")
+            .attr("id","yAxisHist")
             .call(d3.axisLeft(y));
 
     } else {
@@ -95,7 +96,7 @@ function renderHistogram() {
 }
 
 function readData() {
-    d3.csv(csv_path, function(data) {
+    d3.csv(csv_path_hist, function(data) {
         selectedData = data.slice(1, data.length);
         dataLoaded = true;
         renderHistogram();
@@ -106,13 +107,13 @@ function initHistogram() {
     histSvg = d3.select("body")
                 .append("svg")
                 .attrs({
-                    width : w + margin.left + margin.right,
-                    height: h + margin.top + margin.bottom,
-                    transform : "translate(" + margin.left + "," + margin.top + ")"
+                    width : wHist + marginHist.left + marginHist.right,
+                    height: hHist + marginHist.top + marginHist.bottom,
+                    transform : "translate(" + marginHist.left + "," + marginHist.top + ")"
                 })
                 .attr("class", "hist")
                 .append("g")
-                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+                    .attr("transform", "translate(" + marginHist.left + "," + marginHist.top + ")");
     
     readData();
 }
