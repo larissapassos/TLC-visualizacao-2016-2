@@ -3,20 +3,33 @@ var PICK_LAT = "Pickup_latitude",
     DROP_LAT = "Dropoff_latitude",
     DROP_LNG = "Dropoff_longitude";
 
+
 var svg;
 var width = 960,
     height = 500,
     featureColl = {},
-    loaded = false;
+    loaded = false,
+    scale0 = 50000;
+    tau = 2 * Math.PI;
 
 var projection = d3.geoMercator()
     .center([-73.94, 40.70])
-    .scale(50000)
+    .scale(scale0)
     .translate([(width) / 2, (height)/2]);
 
 var path = d3.geoPath()
     .projection(projection)
     .pointRadius(.7);
+
+var zoomed = function() {
+    var transform = d3.event.transform;
+    projection
+        .scale(transform.k * scale0)
+        .translate([transform.x, transform.y]);
+    d3.selectAll("path").attr("d", path)
+}
+
+var zoom = d3.zoom().on("zoom", zoomed);
 
 function toGeoJSON(datum, key) {
     var lat = datum[key == "pickup" ? PICK_LAT : DROP_LAT],
@@ -53,10 +66,11 @@ function loadMap(){
             .style("stroke-width", ".5px")
             .style("fill-opacity", ".1");
 
-        console.log(nycGeoJson);
+        console.log("----1");
+        group.call(zoom);
+        console.log("----2");
     });
 }
-
 
 function loadTaxiSpots(){
     d3.csv("../assets/tlc/green/subset.csv", function(error, tlc){
