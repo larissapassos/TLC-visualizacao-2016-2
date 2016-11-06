@@ -29,11 +29,50 @@ function toGeoJSON(datum, key) {
     };
 }
 
+var loadedData;
+var selectedRect;
+
+function filterPoints(rect) {
+    selectedRect = loadedData.filter(function(d) {
+        var minLat = rect[0][0] <= rect[1][0] ? rect[0][0] : rect[1][0],
+            minLng = rect[0][1] <= rect[1][1] ? rect[0][1] : rect[1][1],
+            maxLat = rect[0][0] <= rect[1][0] ? rect[1][0] : rect[0][0],
+            maxLng = rect[0][1] <= rect[1][1] ? rect[1][1] : rect[0][1];
+        
+        var coords = d.geometry.coordinates;
+        return coords[0] >= minLat && coords[0] <= maxLat && coords[1] >= minLng && coords[1] <= maxLng;
+    });
+}
+
+function brushstart() {
+    selectedRect = undefined;
+    console.log("startBrushing");
+}
+
+function brushend() {
+    if (d3.event.selection != null) {
+        var rect = d3.event.selection.map(projection.invert);
+        console.log(rect);
+
+        filterPoints(rect);
+        plotPoints();    
+    }
+}
+
 function initSVG(){
     svg = d3.select("body").append("svg")
         .attr("width", width)
         .attr("height", height)
         .attr("class", "boroughs");
+    
+    var brush = d3.brush()
+                    .extent([[0, 0], [width, height]])
+                    .on("start", brushstart)
+                    .on("end", brushend);
+    
+    svg = svg.append("g")
+            .attr("class", "brush")
+            .call(brush);
 }
 
 function loadMap(){
@@ -57,30 +96,63 @@ function loadMap(){
     });
 }
 
+function colorPoints(d) {
+    if (selectedRect.indexOf(d) > -1) {
+        return d.properties.type == "pickup" ? "blue" : "green"
+    } else {
+        return "gray";
+    }
+}
+
+function plotPoints() {
+    if (selectedRect) {
+       var bind = d3.select(".tlc")
+                    .selectAll("path.point")
+                    .data(loadedData);
+        
+        bind.enter()
+            .append("path")
+            .attr("d", path)
+            .attr("class", "point")
+            .style("fill", colorPoints)
+            .style("fill-opacity", ".2");
+        
+        bind.exit()
+            .remove();
+            
+        bind.attr("d", path)
+            .attr("class", "point")
+            .style("fill", colorPoints)
+            .style("fill-opacity", ".2");
+    }
+}
 
 function loadTaxiSpots(){
-    d3.csv("../assets/tlc/green/subset.csv", function(error, tlc){
-        if(!loaded) {
-            var features = [];
+    if (!loaded) {
+        d3.csv("../assets/tlc/green/subset.csv", function(error, tlc){
+            if(!loaded) {
+                loaded = true;
+                selectedRect = [];
 
-            tlc.slice(1, tlc.length).forEach(function(datum){
-                features.push(toGeoJSON(datum, "pickup"));
-                features.push(toGeoJSON(datum, "dropoff"));
-            })
+                tlc.slice(1, tlc.length).forEach(function(datum){
+                    selectedRect.push(toGeoJSON(datum, "pickup"));
+                    selectedRect.push(toGeoJSON(datum, "dropoff"));
+                })
 
-            d3.select(".g-1")
-                .append("g")
-                .attr("class", "tlc")
-                .selectAll("path.point")
-                .data(features)
-                .enter()
-                .append("path")
-                .attr("d", path)
-                .attr("class", "point")
-                .style("fill", d => d.properties.type == "pickup" ? "blue" : "green")
-                .style("fill-opacity", ".2");
+                loadedData = selectedRect.slice();
+                
+                d3.select(".g-1")
+                    .append("g")
+                    .attr("class", "tlc")
+                
+                plotPoints();
+            }
+        });
+    } else {
+        if (selectedRect) {
+            plotPoints();
         }
-    });
+    }
 }
 
 function init(){
