@@ -23,13 +23,14 @@ var path = d3.geoPath()
 
 var zoomed = function() {
     var transform = d3.event.transform;
-    projection
-        .scale(transform.k * scale0)
+    projection.scale(transform.k * scale0)
         .translate([transform.x, transform.y]);
     d3.selectAll("path").attr("d", path)
 }
 
-var zoom = d3.zoom().on("zoom", zoomed);
+var zoom = d3.zoom()
+    .scaleExtent([.8, 5])
+    .on("zoom", zoomed);
 
 function toGeoJSON(datum, key) {
     var lat = datum[key == "pickup" ? PICK_LAT : DROP_LAT],
@@ -65,10 +66,6 @@ function loadMap(){
             .style("stroke", "black")
             .style("stroke-width", ".5px")
             .style("fill-opacity", ".1");
-
-        console.log("----1");
-        group.call(zoom);
-        console.log("----2");
     });
 }
 
