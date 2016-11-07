@@ -4,9 +4,11 @@ var PICK_LAT = "Pickup_latitude",
     DROP_LNG = "Dropoff_longitude";
 
 
-var svg;
+var mapSVG;
+var mapG;
 var width = 860,
     height = 600,
+    nyc_geojson_path = "../data/boroughs.geojson",
     featureColl = {},
     loaded = false,
     scale0 = 50000;
@@ -44,29 +46,56 @@ function toGeoJSON(datum, key) {
 }
 
 function initSVG(){
-    svg = d3.select("body").append("svg")
+    mapSVG = d3.select("body")
+        .append("svg")
         .attr("width", width)
         .attr("height", height)
         .attr("class", "boroughs");
+
+    mapG = mapSVG.append("g").attr("class", "map").attr("id", "map");
+}
+
+var centered;
+var clicked = function(d) {
+    var x, y, k;
+
+    if (d && centered !== d) {
+        var centroid = path.centroid(d);
+        x = centroid[0];
+        y = centroid[1];
+        k = 4;
+        centered = d;
+    } else {
+        x = width / 2;
+        y = height / 2;
+        k = 1;
+        centered = null;
+    }
+
+    mapG.selectAll("path")
+        .classed("active", centered && function(d) { return d === centered; });
+
+    mapG.transition()
+        .duration(750)
+        .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")scale(" + k + ")translate(" + -x + "," + -y + ")")
+        .style("stroke-width", 1.5 / k + "px");
 }
 
 function loadMap(){
-    d3.json("../data/boroughs.geojson", function(error, nycGeoJson) {
-        var group = svg.append("g")
-            .attr("class", "g-1");
-
-        group.append("g")
-            .attr("class", "boroughs")
-            .call(zoom)
-            .selectAll(".state")
+    d3.json(nyc_geojson_path, function(error, nycGeoJson) {
+        mapG//.call(zoom)
+            .selectAll("#nyc-state")
             .data(nycGeoJson.features)
             .enter()
             .append("path")
             .attr("class", function(d){ return d.properties.name; })
+            .attr("id", "nyc-state")
             .attr("d", path)
-            .style("stroke", "black")
+            .style("stroke", "orange")
+            .style("fill", "orange")
             .style("stroke-width", ".5px")
-            .style("fill-opacity", ".1");
+            .style("fill-opacity", ".1")
+            .on("click", clicked);
     });
 }
 
@@ -75,20 +104,18 @@ function loadTaxiSpots(){
         if(!loaded) {
             var features = [];
 
-            tlc.slice(1, tlc.length).forEach(function(datum){
+            tlc.slice(1, 10000).forEach(function(datum){
                 features.push(toGeoJSON(datum, "pickup"));
                 features.push(toGeoJSON(datum, "dropoff"));
             })
 
-            d3.select(".g-1")
-                .append("g")
-                .attr("class", "tlc")
-                .selectAll("path.point")
+            mapG.selectAll("#taxi-spot")
                 .data(features)
                 .enter()
                 .append("path")
                 .attr("d", path)
                 .attr("class", "point")
+                .attr("id", "taxi-spot")
                 .style("fill", d => d.properties.type == "pickup" ? "blue" : "green")
                 .style("fill-opacity", ".2");
         }
