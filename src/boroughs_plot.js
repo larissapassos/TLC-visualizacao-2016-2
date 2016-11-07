@@ -57,6 +57,7 @@ function loadMap(){
 
         group.append("g")
             .attr("class", "boroughs")
+            .call(zoom)
             .selectAll(".state")
             .data(nycGeoJson.features)
             .enter()
