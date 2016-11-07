@@ -98,7 +98,7 @@ function loadTaxiSpots(){
         if(!loaded) {
             var features = [];
 
-            tlc.slice(1, 10000).forEach(function(datum){
+            tlc.slice(1, tlc.length).forEach(function(datum){
                 features.push(toGeoJSON(datum, "pickup"));
                 features.push(toGeoJSON(datum, "dropoff"));
             })
