@@ -5,17 +5,17 @@ var PICK_LAT = "Pickup_latitude",
 
 
 var svg;
-var width = 960,
-    height = 500,
+var width = 860,
+    height = 600,
     featureColl = {},
     loaded = false,
     scale0 = 50000;
     tau = 2 * Math.PI;
 
 var projection = d3.geoMercator()
-    .center([-73.94, 40.70])
+    .center([-74.55, 40.95])
     .scale(scale0)
-    .translate([(width) / 2, (height)/2]);
+    .translate([0, 0]);
 
 var path = d3.geoPath()
     .projection(projection)
