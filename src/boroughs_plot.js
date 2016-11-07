@@ -72,8 +72,8 @@ var clicked = function(d) {
         centered = null;
     }
 
-    mapG.selectAll("path")
-        .classed("active", centered && function(d) { return d === centered; });
+    mapG.selectAll("#nyc-state")
+        .classed("active", centered && function(d) {return d === centered; });
 
     mapG.transition()
         .duration(750)
@@ -83,18 +83,12 @@ var clicked = function(d) {
 
 function loadMap(){
     d3.json(nyc_geojson_path, function(error, nycGeoJson) {
-        mapG//.call(zoom)
-            .selectAll("#nyc-state")
+        mapG.selectAll("#nyc-state")
             .data(nycGeoJson.features)
             .enter()
             .append("path")
-            .attr("class", function(d){ return d.properties.name; })
             .attr("id", "nyc-state")
             .attr("d", path)
-            .style("stroke", "orange")
-            .style("fill", "orange")
-            .style("stroke-width", ".5px")
-            .style("fill-opacity", ".1")
             .on("click", clicked);
     });
 }
@@ -114,7 +108,6 @@ function loadTaxiSpots(){
                 .enter()
                 .append("path")
                 .attr("d", path)
-                .attr("class", "point")
                 .attr("id", "taxi-spot")
                 .style("fill", d => d.properties.type == "pickup" ? "blue" : "green")
                 .style("fill-opacity", ".2");
