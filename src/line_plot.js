@@ -9,7 +9,12 @@ var csv_path = "../assets/tlc/green/subset.csv";
 
 var tripsPerDay = {};
 
+var chartXAxis = false;
+var chartYAxis = false;
+
 function renderLineChart() {
+    getTripsPerDay();
+
     var lxScale = d3.scalePoint()
                     .domain(Object.keys(tripsPerDay))
                     .range([padding.outer, w - padding.outer]);
@@ -19,11 +24,23 @@ function renderLineChart() {
                     .domain([d3.min(Object.values(tripsPerDay)), d3.max(Object.values(tripsPerDay))])
                     .range([h - padding.outer, padding.outer]);
 
-    var xAxis = d3.axisBottom(lxScale);       
-    var xAxisGroup = d3.select("#xAxis").call(xAxis);
+    var xAxis = d3.axisBottom(lxScale);
 
-    var yAxis = d3.axisLeft(lyScale);          
-    var yAxisGroup = d3.select("#yAxis").call(yAxis);
+    if(!chartXAxis) {       
+        d3.select("#xAxis").call(xAxis);
+        chartXAxis = true;
+    } else {
+        d3.select("#xAxis").transition().call(xAxis);
+    }
+
+    var yAxis = d3.axisLeft(lyScale);   
+
+    if(!chartYAxis) {       
+        d3.select("#yAxis").call(yAxis);
+        chartYAxis = true;
+    } else {
+        d3.select("#yAxis").transition().call(yAxis);
+    }
 
     var tripsPerDayArray = [];
     Object.keys(tripsPerDay).forEach(function(k) {
@@ -36,16 +53,22 @@ function renderLineChart() {
     line = d3.line()
              .x(function(d) { return lxScale(d.day) + padding.inner; })
              .y(function(d) { return lyScale(d.count); });
+    
+    var lineBind = svgChart.selectAll(".line")
+                            .data([tripsPerDayArray]);
 
-    svgChart.append("path")
+    lineBind.enter()
+            .append("path")
             .attr("class", "line")
-            .attr("d", line(tripsPerDayArray))
+            .attr("d", function(d) { return line(d); })
             .attr("fill", "none")
             .style("stroke", "green")
             .attr("stroke-width", "3px")
             .on("mouseover", function(d) {
-                d3.event.stopPropagation();
-                d3.event.preventDefault();
+                if (d3.event != null) {
+                    d3.event.stopPropagation();
+                    d3.event.preventDefault();
+                }
 
                 d3.select(this).attr("stroke-width", "5px");
             })
@@ -59,26 +82,44 @@ function renderLineChart() {
             .text(function(d) {
                 return "Green Cab Trips";
             });
+    
+    lineBind.exit()
+            .remove();
+    
+    lineBind.transition()
+            .attr("d", function(d) { return line(d); })
+            .attr("fill", "none")
+            .style("stroke", "green")
+            .attr("stroke-width", "3px");
 }
 
-function readCsv() {
-    console.time('loading svg');
+function getTripsPerDay() {
     var timeParser = d3.timeParse("%Y-%m-%d %H:%M:%S");
-    d3.csv(csv_path, function(data) {
-        data.slice(1, data.length).forEach(function(d) {
+    tripsPerDay = {};
+    selectedData.forEach(function(d) {
             var day = timeParser(d.lpep_pickup_datetime).getDate();
             if (day in tripsPerDay) {
                 tripsPerDay[day]++;
             } else {
                 tripsPerDay[day] = 1;
             }
-        });
-        console.timeEnd('loading svg');
-
-        console.time('drawing svg');
-        renderLineChart();
-        console.timeEnd('drawing svg');
     });
+}
+
+function readCsv() {
+    if (!loaded) {
+        console.time('loading svg');
+        d3.csv(csv_path, function(data) {
+            loadedData = data.slice(1, data.length);
+            selectedData = loadedData.slice();
+            loaded = true;
+            console.timeEnd('loading svg');
+
+            console.time('drawing svg');
+            renderLineChart();
+            console.timeEnd('drawing svg');
+    });
+    }
 }
 
 function createLineChartSvg() {
@@ -103,5 +144,7 @@ function createLineChartSvg() {
             .attr("transform","translate(" + (padding.inner + margin.left) + ",0)");
 }
 
-createLineChartSvg();
-readCsv();
+function initLinePlot() {
+    createLineChartSvg();
+    readCsv();
+}

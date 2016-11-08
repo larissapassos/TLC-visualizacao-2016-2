@@ -1,13 +1,9 @@
-var PICK_LAT = "Pickup_latitude",
-    PICK_LNG = "Pickup_longitude",
-    DROP_LAT = "Dropoff_latitude",
-    DROP_LNG = "Dropoff_longitude";
-
-var svg;
+var mapSvg;
 var width = 960,
     height = 500,
-    featureColl = {},
-    loaded = false;
+    featureColl = {};
+
+var allPoints;
 
 var projection = d3.geoMercator()
     .center([-73.94, 40.70])
@@ -29,21 +25,6 @@ function toGeoJSON(datum, key) {
     };
 }
 
-var loadedData;
-var selectedRect;
-
-function filterPoints(rect) {
-    selectedRect = loadedData.filter(function(d) {
-        var minLat = rect[0][0] <= rect[1][0] ? rect[0][0] : rect[1][0],
-            minLng = rect[0][1] <= rect[1][1] ? rect[0][1] : rect[1][1],
-            maxLat = rect[0][0] <= rect[1][0] ? rect[1][0] : rect[0][0],
-            maxLng = rect[0][1] <= rect[1][1] ? rect[1][1] : rect[0][1];
-        
-        var coords = d.geometry.coordinates;
-        return coords[0] >= minLat && coords[0] <= maxLat && coords[1] >= minLng && coords[1] <= maxLng;
-    });
-}
-
 function brushstart() {
     selectedRect = undefined;
     console.log("startBrushing");
@@ -54,13 +35,13 @@ function brushend() {
         var rect = d3.event.selection.map(projection.invert);
         console.log(rect);
 
-        filterPoints(rect);
-        plotPoints();    
+        filterPoints(allPoints, rect);
+        redraw();    
     }
 }
 
 function initSVG(){
-    svg = d3.select("body").append("svg")
+    mapSvg = d3.select("body").append("svg")
         .attr("width", width)
         .attr("height", height)
         .attr("class", "boroughs");
@@ -70,14 +51,14 @@ function initSVG(){
                     .on("start", brushstart)
                     .on("end", brushend);
     
-    svg = svg.append("g")
+    mapSvg = mapSvg.append("g")
             .attr("class", "brush")
             .call(brush);
 }
 
 function loadMap(){
     d3.json("../data/boroughs.geojson", function(error, nycGeoJson) {
-        var group = svg.append("g")
+        var group = mapSvg.append("g")
             .attr("class", "g-1");
 
         group.append("g")
@@ -108,7 +89,7 @@ function plotPoints() {
     if (selectedRect) {
        var bind = d3.select(".tlc")
                     .selectAll("path.point")
-                    .data(loadedData);
+                    .data(allPoints);
         
         bind.enter()
             .append("path")
@@ -139,7 +120,8 @@ function loadTaxiSpots(){
                     selectedRect.push(toGeoJSON(datum, "dropoff"));
                 })
 
-                loadedData = selectedRect.slice();
+                allPoints = selectedRect.slice();
+                loadedData = tlc.slice(1, tlc.length);
                 
                 d3.select(".g-1")
                     .append("g")
@@ -155,10 +137,22 @@ function loadTaxiSpots(){
     }
 }
 
-function init(){
+function initMap(){
     initSVG();
     loadMap();
     loadTaxiSpots();
+}
+
+function redraw() {
+    plotPoints();
+    renderHistogram();
+    renderLineChart();
+}
+
+function init() {
+    initMap();
+    initHist();
+    initLinePlot();
 }
 
 init();
