@@ -1,18 +1,13 @@
-var PICK_LAT = "Pickup_latitude",
-    PICK_LNG = "Pickup_longitude",
-    DROP_LAT = "Dropoff_latitude",
-    DROP_LNG = "Dropoff_longitude";
-
-
-var mapSVG;
+var mapSvg;
 var mapG;
 var width = 860,
     height = 600,
     nyc_geojson_path = "../data/boroughs.geojson",
     featureColl = {},
-    loaded = false,
-    scale0 = 50000;
+    scale0 = 50000,
     tau = 2 * Math.PI;
+
+var allPoints;
 
 var projection = d3.geoMercator()
     .center([-74.55, 40.95])
@@ -45,14 +40,34 @@ function toGeoJSON(datum, key) {
     };
 }
 
+function brushstart() {
+    selectedRect = undefined;
+    console.log("startBrushing");
+}
+
+function brushend() {
+    if (d3.event.selection != null) {
+        var rect = d3.event.selection.map(projection.invert);
+        console.log(rect);
+
+        filterPoints(allPoints, rect);
+        redraw();    
+    }
+}
+
 function initSVG(){
     mapSVG = d3.select("body")
         .append("svg")
         .attr("width", width)
         .attr("height", height)
         .attr("class", "boroughs");
+    
+    var brush = d3.brush()
+                    .extent([[0, 0], [width, height]])
+                    .on("start", brushstart)
+                    .on("end", brushend);
 
-    mapG = mapSVG.append("g").attr("class", "map").attr("id", "map");
+    mapG = mapSVG.append("g").attr("class", "map").attr("id", "map").call(brush);
 }
 
 var centered;
@@ -93,32 +108,76 @@ function loadMap(){
     });
 }
 
-function loadTaxiSpots(){
-    d3.csv("../assets/tlc/green/subset.csv", function(error, tlc){
-        if(!loaded) {
-            var features = [];
-
-            tlc.slice(1, tlc.length).forEach(function(datum){
-                features.push(toGeoJSON(datum, "pickup"));
-                features.push(toGeoJSON(datum, "dropoff"));
-            })
-
-            mapG.selectAll("#taxi-spot")
-                .data(features)
-                .enter()
-                .append("path")
-                .attr("d", path)
-                .attr("id", "taxi-spot")
-                .style("fill", d => d.properties.type == "pickup" ? "blue" : "green")
-                .style("fill-opacity", ".2");
-        }
-    });
+function colorPoints(d) {
+    if (selectedRect.indexOf(d) > -1) {
+        return d.properties.type == "pickup" ? "blue" : "green"
+    } else {
+        return "gray";
+    }
 }
 
-function init(){
+function plotPoints() {
+    if (selectedRect) {
+       var bind = mapG.selectAll("#taxi-spot")
+                    .data(allPoints);
+        
+        bind.enter()
+            .append("path")
+            .attr("d", path)
+            .attr("id", "taxi-spot")
+            .style("fill", colorPoints)
+            .style("fill-opacity", ".2");
+        
+        bind.exit()
+            .remove();
+            
+        bind.attr("d", path)
+            .style("fill", colorPoints)
+            .style("fill-opacity", ".2");
+    }
+}
+
+function loadTaxiSpots(){
+    if (!loaded) {
+        d3.csv("../assets/tlc/green/subset.csv", function(error, tlc){
+            if(!loaded) {
+                loaded = true;
+                selectedRect = [];
+
+                tlc.slice(1, tlc.length).forEach(function(datum){
+                    selectedRect.push(toGeoJSON(datum, "pickup"));
+                    selectedRect.push(toGeoJSON(datum, "dropoff"));
+                })
+
+                allPoints = selectedRect.slice();
+                loadedData = tlc.slice(1, tlc.length);
+                
+                plotPoints();
+            }
+        });
+    } else {
+        if (selectedRect) {
+            plotPoints();
+        }
+    }
+}
+
+function initMap(){
     initSVG();
     loadMap();
     loadTaxiSpots();
+}
+
+function redraw() {
+    plotPoints();
+    renderHistogram();
+    renderLineChart();
+}
+
+function init() {
+    initMap();
+    initHist();
+    initLinePlot();
 }
 
 init();

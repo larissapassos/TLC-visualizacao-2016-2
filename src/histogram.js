@@ -3,11 +3,11 @@ var wHist = 500 - marginHist.left - marginHist.right;
 var hHist = 500 - marginHist.top - marginHist.bottom;
 var histSvg;
 
-var selectedData;
-var dataLoaded = false;
-
 var barWidth = 40;
 var csv_path_hist = "../assets/tlc/green/subset.csv";
+
+var histXAxis = false;
+var histYAxis = false;
 
 function prettyDay(day) {
     var days = ["Sun.", "Mon.", "Tue.", "Wed.", "Thu.", "Fri.", "Sat."];
@@ -24,7 +24,7 @@ function groupTrips() {
 }
 
 function renderHistogram() {
-    if (dataLoaded) {
+    if (loaded) {
         var tripsPerDayHist = groupTrips();
     
         var tripsArray = [];
@@ -57,7 +57,7 @@ function renderHistogram() {
             .attr("height", function(d) {
                 return hHist - y(d.count);
             })
-            .attr("fill", "green")
+            .attr("fill", "blue")
             .attr("stroke-width", "1px")
             .attr("stroke","black");
 
@@ -77,18 +77,36 @@ function renderHistogram() {
             .attr("height", function(d) {
                 return hHist - y(d.count);
             })
-            .attr("fill", "green")
+            .attr("fill", "blue")
             .attr("stroke-width", "1px")
             .attr("stroke","black");
         
-        histSvg.append("g")
-            .attr("id","xAxisHist")
-            .attr("transform","translate(0," + hHist + ")")
-            .call(d3.axisBottom(x).tickFormat(function(d) { return prettyDay(d); }));
+        var xAxisHist = d3.axisBottom(x).tickFormat(function(d) { return prettyDay(d); });
+        
+        if (!histXAxis) {
+            histSvg.append("g")
+                    .attr("id","xAxisHist")
+                    .attr("transform","translate(0," + hHist + ")")
+                    .call(xAxisHist);
+            histXAxis = true;
+        }
 
-        histSvg.append("g")
-            .attr("id","yAxisHist")
-            .call(d3.axisLeft(y));
+        histSvg.select("#xAxisHist")
+                .transition()
+                .call(xAxisHist);
+
+        var yAxisHist = d3.axisLeft(y);
+
+        if (!histYAxis) {
+            histSvg.append("g")
+                    .attr("id","yAxisHist")
+                    .call(yAxisHist);
+            histYAxis = true;
+        }
+
+        histSvg.select("#yAxisHist")
+                .transition()
+                .call(yAxisHist);
 
     } else {
         console.log("Error. data should have been loaded");
@@ -96,14 +114,17 @@ function renderHistogram() {
 }
 
 function readData() {
-    d3.csv(csv_path_hist, function(data) {
-        selectedData = data.slice(1, data.length);
-        dataLoaded = true;
-        renderHistogram();
-    });
+    if (!loaded) {
+        d3.csv(csv_path_hist, function(data) {
+            loadedData = data.slice(1, data.length);
+            selectedData = loadedData.slice();
+            loaded = true;
+            renderHistogram();
+        });
+    }
 }
 
-function initHistogram() {
+function initHist() {
     histSvg = d3.select("body")
                 .append("svg")
                 .attrs({
@@ -117,5 +138,3 @@ function initHistogram() {
     
     readData();
 }
-
-initHistogram();
