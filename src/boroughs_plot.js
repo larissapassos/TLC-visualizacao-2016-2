@@ -1,27 +1,28 @@
 var mapSvg;
 var mapG;
+
+var leaflet;
+var leafletSvg;
+var leafletG;
+
 var width = 860,
     height = 600,
     nyc_geojson_path = "../data/boroughs.geojson",
     featureColl = {},
     scale0 = 50000,
-    tau = 2 * Math.PI;
+    tau = 2.0 * Math.PI;
 
-var allPoints;
+var allPointsGeoJSON;
+var taxiSpotsLeaflet;
 
-var projection = d3.geoMercator()
-    .center([-74.55, 40.95])
-    .scale(scale0)
-    .translate([0, 0]);
+// var projection = d3.geoMercator()
+//     .center([-74.55, 40.95])
+//     .scale(scale0)
+//     .translate([0, 0]);
 
-var path = d3.geoPath()
-    .projection(projection)
-    .pointRadius(.7);
-
-var leaflet;
-var leafletSvg;
-var leafletG;
-var pp;
+// var path = d3.geoPath()
+//     .projection(projection)
+//     .pointRadius(.7);
 
 function toGeoJSON(datum, key) {
     var lat = datum[key == "pickup" ? PICK_LAT : DROP_LAT],
@@ -68,27 +69,6 @@ function colorPoints(d) {
     }
 }
 
-function plotPoints() {
-    if (selectedRect) {
-       var bind = mapG.selectAll("#taxi-spot")
-                    .data(allPoints);
-        
-        bind.enter()
-            .append("path")
-            .attr("d", path)
-            .attr("id", "taxi-spot")
-            .style("fill", colorPoints)
-            .style("fill-opacity", ".2");
-        
-        bind.exit()
-            .remove();
-            
-        bind.attr("d", path)
-            .style("fill", colorPoints)
-            .style("fill-opacity", ".2");
-    }
-}
-
 function loadTaxiSpots(){
     if (!loaded) {
         d3.csv("../assets/tlc/green/subset2.csv", function(error, tlc){
@@ -101,58 +81,49 @@ function loadTaxiSpots(){
                     selectedRect.push(toGeoJSON(datum, "dropoff"));
                 })
 
-                allPoints = selectedRect.slice();
+                allPointsGeoJSON = selectedRect.slice();
                 loadedData = tlc.slice(1, tlc.length);
-                
-                leaflet = new L.Map("leaflet", {center: [40.730610, -73.935242], zoom: 12})
-                               .addLayer(new L.TileLayer("http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"));
-                mapLink = '<a href="http://openstreetmap.org">OpenStreetMap</a>';
-                L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        attribution: '&copy; ' + mapLink + ' Contributors', maxZoom: 18,
-                 }).addTo(leaflet);
-
-                leafletSvg = d3.select(leaflet.getPanes().overlayPane).append("svg");
-                leafletG = leafletSvg.append("g").attr("class", "leaflet-zoom-hide");
-                
+                       
                 var transform = d3.geoTransform({point: projectPoint});
                 var path = d3.geoPath().projection(transform);
 
-                var ps = leafletG.selectAll("#taxi-spot")
-                          .data(allPoints)
-                          .enter()
-                          .append("path")
-                          .attr("id", "taxi-spot")
-                          .style("fill", colorPoints)
-                          .style("fill-opacity", ".2");
+                taxiSpotsLeaflet = leafletG.selectAll("#taxi-spot")
+                                           .data(allPointsGeoJSON)
+                                           .enter()
+                                           .append("path")
+                                           .attr("id", "taxi-spot")
+                                           .style("fill", colorPoints)
+                                           .style("fill-opacity", ".2");
 
-                leaflet.on("zoomend", updateL);
-                updateL();
+                leaflet.on("zoomend", updateLeaflet);
+                updateLeaflet();
 
+                // Local auxiliary functions
                 function projectPoint(x, y) {
                     var point = leaflet.latLngToLayerPoint(new L.LatLng(y, x));
                     this.stream.point(point.x, point.y);
                 }
 
-                function updateL() {
+                function updateLeaflet() {
                     var bounds = getBounds(),
                         topLeft = bounds[0],
                         bottomRight = bounds[1];
 
-                    leafletSvg.attr("width", bottomRight[0] - topLeft[0])
-                          .attr("height", bottomRight[1] - topLeft[1])
-                          .style("left", topLeft[0] + "px")
-                          .style("top", topLeft[1] + "px");
+                    leafletSvg.attrs({
+                        width : bottomRight[0] - topLeft[0],
+                        height : bottomRight[1] - topLeft[1]
+                    })
+                    .style("left", topLeft[0] + "px")
+                    .style("top", topLeft[1] + "px");
 
-                    console.log(leafletSvg.attr("width") + " " + leafletSvg.attr("height"))
                     leafletG.attr("transform", "translate(" + -topLeft[0] + "," + -topLeft[1] + ")");
-                    ps.attr("d", path);
+                    taxiSpotsLeaflet.attr("d", path);
                 }
 
                 function getBounds() {
                     var finalBounds = [[Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY], 
                                        [Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY]];
-
-                    allPoints.forEach(function(p) {
+                    allPointsGeoJSON.forEach(function(p) {
                         var b = path.bounds(p);
                         finalBounds[0][0] = Math.min(finalBounds[0][0], b[0][0]);
                         finalBounds[0][1] = Math.min(finalBounds[0][1], b[0][1]);
@@ -163,11 +134,20 @@ function loadTaxiSpots(){
                 }
             }
         });
-    } else {
-        if (selectedRect) {
-            plotPoints();
-        }
     }
+}
+
+function loadLeaflet() {
+    leaflet = new L.Map("leaflet", {center: [40.730610, -73.935242], zoom: 12})
+                   .addLayer(new L.TileLayer("http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"));
+    mapLink = '<a href="http://openstreetmap.org">OpenStreetMap</a>';
+
+    L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; ' + mapLink + ' Contributors', maxZoom: 18,
+     }).addTo(leaflet);
+
+    leafletSvg = d3.select(leaflet.getPanes().overlayPane).append("svg");
+    leafletG = leafletSvg.append("g").attr("class", "leaflet-zoom-hide");
 }
 
 function initMap(){
@@ -183,6 +163,7 @@ function redraw() {
 }
 
 function init() {
+    loadLeaflet();
     initMap();
     //initHist();
     //initLinePlot();
