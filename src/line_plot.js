@@ -5,7 +5,7 @@ var h = 500 - margin.top - margin.bottom;
 var svgChart;
 
 //var csv_path = "../assets/tlc/green/green_tripdata_2016-06.csv";
-var csv_path = "../assets/tlc/green/subset.csv";
+var csv_path = "../assets/tlc/green/subset2.csv";
 
 var tripsPerDay = {};
 

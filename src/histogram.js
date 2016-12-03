@@ -4,7 +4,7 @@ var hHist = 500 - marginHist.top - marginHist.bottom;
 var histSvg;
 
 var barWidth = 40;
-var csv_path_hist = "../assets/tlc/green/subset.csv";
+var csv_path_hist = "../assets/tlc/green/subset2.csv";
 
 var histXAxis = false;
 var histYAxis = false;

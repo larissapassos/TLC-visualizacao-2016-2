@@ -18,41 +18,23 @@ var path = d3.geoPath()
     .projection(projection)
     .pointRadius(.7);
 
-var zoomed = function() {
-    var transform = d3.event.transform;
-    projection.scale(transform.k * scale0)
-        .translate([transform.x, transform.y]);
-    d3.selectAll("path").attr("d", path)
-}
-
-var zoom = d3.zoom()
-    .scaleExtent([.8, 5])
-    .on("zoom", zoomed);
+var leaflet;
+var leafletSvg;
+var leafletG;
+var pp;
 
 function toGeoJSON(datum, key) {
     var lat = datum[key == "pickup" ? PICK_LAT : DROP_LAT],
         lng = datum[key == "pickup" ? PICK_LNG : DROP_LNG];
 
+    if (lat == 0.0 || lng == 0.0) {
+        console.log(datum)
+    }
     return {
         "type": "Feature",
-        "geometry": {"type": "Point", "coordinates": [lng, lat, 0.0]},
+        "geometry": {"type": "Point", "coordinates": [lng, lat]},
         "properties": {"type": key}
     };
-}
-
-function brushstart() {
-    selectedRect = undefined;
-    console.log("startBrushing");
-}
-
-function brushend() {
-    if (d3.event.selection != null) {
-        var rect = d3.event.selection.map(projection.invert);
-        console.log(rect);
-
-        filterPoints(allPoints, rect);
-        redraw();    
-    }
 }
 
 function initSVG(){
@@ -61,40 +43,11 @@ function initSVG(){
         .attr("width", width)
         .attr("height", height)
         .attr("class", "boroughs");
-    
-    var brush = d3.brush()
-                    .extent([[0, 0], [width, height]])
-                    .on("start", brushstart)
-                    .on("end", brushend);
 
-    mapG = mapSVG.append("g").attr("class", "map").attr("id", "map").call(brush);
+    mapG = mapSVG.append("g").attr("class", "map").attr("id", "map");
 }
 
 var centered;
-var clicked = function(d) {
-    var x, y, k;
-
-    if (d && centered !== d) {
-        var centroid = path.centroid(d);
-        x = centroid[0];
-        y = centroid[1];
-        k = 4;
-        centered = d;
-    } else {
-        x = width / 2;
-        y = height / 2;
-        k = 1;
-        centered = null;
-    }
-
-    mapG.selectAll("#nyc-state")
-        .classed("active", centered && function(d) {return d === centered; });
-
-    mapG.transition()
-        .duration(750)
-        .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")scale(" + k + ")translate(" + -x + "," + -y + ")")
-        .style("stroke-width", 1.5 / k + "px");
-}
 
 function loadMap(){
     d3.json(nyc_geojson_path, function(error, nycGeoJson) {
@@ -103,8 +56,7 @@ function loadMap(){
             .enter()
             .append("path")
             .attr("id", "nyc-state")
-            .attr("d", path)
-            .on("click", clicked);
+            .attr("d", path);
     });
 }
 
@@ -139,7 +91,7 @@ function plotPoints() {
 
 function loadTaxiSpots(){
     if (!loaded) {
-        d3.csv("../assets/tlc/green/subset.csv", function(error, tlc){
+        d3.csv("../assets/tlc/green/subset2.csv", function(error, tlc){
             if(!loaded) {
                 loaded = true;
                 selectedRect = [];
@@ -152,7 +104,63 @@ function loadTaxiSpots(){
                 allPoints = selectedRect.slice();
                 loadedData = tlc.slice(1, tlc.length);
                 
-                plotPoints();
+                leaflet = new L.Map("leaflet", {center: [40.730610, -73.935242], zoom: 12})
+                               .addLayer(new L.TileLayer("http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"));
+                mapLink = '<a href="http://openstreetmap.org">OpenStreetMap</a>';
+                L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; ' + mapLink + ' Contributors', maxZoom: 18,
+                 }).addTo(leaflet);
+
+                leafletSvg = d3.select(leaflet.getPanes().overlayPane).append("svg");
+                leafletG = leafletSvg.append("g").attr("class", "leaflet-zoom-hide");
+                
+                var transform = d3.geoTransform({point: projectPoint});
+                var path = d3.geoPath().projection(transform);
+
+                var ps = leafletG.selectAll("#taxi-spot")
+                          .data(allPoints)
+                          .enter()
+                          .append("path")
+                          .attr("id", "taxi-spot")
+                          .style("fill", colorPoints)
+                          .style("fill-opacity", ".2");
+
+                leaflet.on("zoomend", updateL);
+                updateL();
+
+                function projectPoint(x, y) {
+                    var point = leaflet.latLngToLayerPoint(new L.LatLng(y, x));
+                    this.stream.point(point.x, point.y);
+                }
+
+                function updateL() {
+                    var bounds = getBounds(),
+                        topLeft = bounds[0],
+                        bottomRight = bounds[1];
+
+                    leafletSvg.attr("width", bottomRight[0] - topLeft[0])
+                          .attr("height", bottomRight[1] - topLeft[1])
+                          .style("left", topLeft[0] + "px")
+                          .style("top", topLeft[1] + "px");
+
+                    console.log(leafletSvg.attr("width") + " " + leafletSvg.attr("height"))
+                    leafletG.attr("transform", "translate(" + -topLeft[0] + "," + -topLeft[1] + ")");
+                    ps.attr("d", path);
+                }
+
+                function getBounds() {
+                    var finalBounds = [[Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY], 
+                                       [Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY]];
+
+                    allPoints.forEach(function(p) {
+                        var b = path.bounds(p);
+                        finalBounds[0][0] = Math.min(finalBounds[0][0], b[0][0]);
+                        finalBounds[0][1] = Math.min(finalBounds[0][1], b[0][1]);
+                        finalBounds[1][0] = Math.max(finalBounds[1][0], b[1][0]);
+                        finalBounds[1][1] = Math.max(finalBounds[1][1], b[1][1]);
+                    })
+                    return finalBounds;
+                }
             }
         });
     } else {
@@ -163,21 +171,21 @@ function loadTaxiSpots(){
 }
 
 function initMap(){
-    initSVG();
-    loadMap();
+    //initSVG();
+    //loadMap();
     loadTaxiSpots();
 }
 
 function redraw() {
-    plotPoints();
-    renderHistogram();
-    renderLineChart();
+    //plotPoints();
+    //renderHistogram();
+    //renderLineChart();
 }
 
 function init() {
     initMap();
-    initHist();
-    initLinePlot();
+    //initHist();
+    //initLinePlot();
 }
 
 init();
