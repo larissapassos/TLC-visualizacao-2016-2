@@ -5,17 +5,19 @@
         <title>TLC Trip Records</title>
         <script src="../assets/scripts/d3.min.js"></script>
         <script src="../assets/scripts/d3-selection-multi.min.js"></script>
-        <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.0/leaflet.js"></script>-->
         <script src="../assets/scripts/leaflet.js"></script>
         <script type="text/javascript" src="../assets/scripts/Map.SelectArea.min.js"></script>
         <link rel="stylesheet" type="text/css" href="css/map.css">
-        <link rel="stylesheet" type="text/css" href="../assets/css/leaflet.css">
+        <link rel="stylesheet" type="text/css" href="../assets/css/views.css">
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.2/dist/leaflet.css" />
         <style type="text/css">
         </style>
     </head>
     <body>
-        <div id="leaflet"></div>
+        <div id="map">
+            <div id="leaflet"></div>
+        </div>
+        <div id="views">
         <script src="constants.js"></script>
         <script src="line_plot.js"></script>
         <script src="histogram.js"></script>

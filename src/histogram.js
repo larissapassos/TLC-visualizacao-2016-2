@@ -1,6 +1,6 @@
 var marginHist = {top: 20, right: 20, bottom: 40, left: 60};
-var wHist = 500 - marginHist.left - marginHist.right;
-var hHist = 500 - marginHist.top - marginHist.bottom;
+var wHist = 400 - marginHist.left - marginHist.right;
+var hHist = 300 - marginHist.top - marginHist.bottom;
 var histSvg;
 
 var barWidth = 40;
@@ -125,9 +125,10 @@ function readData() {
 }
 
 function initHist() {
-    histSvg = d3.select("body")
+    histSvg = d3.select("#views")
                 .append("svg")
                 .attrs({
+                    id : "hist",
                     width : wHist + marginHist.left + marginHist.right,
                     height: hHist + marginHist.top + marginHist.bottom,
                     transform : "translate(" + marginHist.left + "," + marginHist.top + ")"
