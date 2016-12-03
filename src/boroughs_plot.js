@@ -14,6 +14,7 @@ var width = 860,
 
 var allPointsGeoJSON;
 var taxiSpotsLeaflet;
+var path;
 
 // var projection = d3.geoMercator()
 //     .center([-74.55, 40.95])
@@ -69,6 +70,27 @@ function colorPoints(d) {
     }
 }
 
+function plotPoints() {
+    if (selectedRect) {
+       var bind = leafletG.selectAll("#taxi-spot")
+                    .data(allPointsGeoJSON);
+
+        bind.enter()
+            .append("path")
+            .attr("d", path)
+            .attr("id", "taxi-spot")
+            .style("fill", colorPoints)
+            .style("fill-opacity", ".2");
+        
+        bind.exit()
+            .remove();
+            
+        bind.attr("d", path)
+            .style("fill", colorPoints)
+            .style("fill-opacity", ".2");
+    }
+}
+
 function loadTaxiSpots(){
     if (!loaded) {
         d3.csv("../assets/tlc/green/subset2.csv", function(error, tlc){
@@ -85,7 +107,7 @@ function loadTaxiSpots(){
                 loadedData = tlc.slice(1, tlc.length);
                        
                 var transform = d3.geoTransform({point: projectPoint});
-                var path = d3.geoPath().projection(transform);
+                path = d3.geoPath().projection(transform);
 
                 taxiSpotsLeaflet = leafletG.selectAll("#taxi-spot")
                                            .data(allPointsGeoJSON)
@@ -138,13 +160,25 @@ function loadTaxiSpots(){
 }
 
 function loadLeaflet() {
-    leaflet = new L.Map("leaflet", {center: [40.730610, -73.935242], zoom: 12})
+    leaflet = new L.Map("leaflet", {center: [40.730610, -73.935242], zoom: 12, selectArea: true})
                    .addLayer(new L.TileLayer("http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"));
     mapLink = '<a href="http://openstreetmap.org">OpenStreetMap</a>';
 
     L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; ' + mapLink + ' Contributors', maxZoom: 18,
      }).addTo(leaflet);
+
+    leaflet.on('areaselected', (e) => {
+        var arr = [[e.bounds._southWest.lng, e.bounds._northEast.lat], [e.bounds._northEast.lng, e.bounds._southWest.lat]];
+        filterPoints(allPointsGeoJSON, arr);
+        redraw();
+
+        function redraw() {
+            plotPoints();
+            renderHistogram();
+            renderLineChart();
+        }
+    });
 
     leafletSvg = d3.select(leaflet.getPanes().overlayPane).append("svg");
     leafletG = leafletSvg.append("g").attr("class", "leaflet-zoom-hide");
@@ -153,20 +187,14 @@ function loadLeaflet() {
 function initMap(){
     //initSVG();
     //loadMap();
+    loadLeaflet();
     loadTaxiSpots();
 }
 
-function redraw() {
-    //plotPoints();
-    //renderHistogram();
-    //renderLineChart();
-}
-
 function init() {
-    loadLeaflet();
     initMap();
-    //initHist();
-    //initLinePlot();
+    initHist();
+    initLinePlot();
 }
 
 init();
