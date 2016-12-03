@@ -1,13 +1,9 @@
-var mapSvg;
-var mapG;
-
 var leaflet;
 var leafletSvg;
 var leafletG;
 
 var width = 860,
-    height = 600,
-    nyc_geojson_path = "../data/boroughs.geojson",
+    height = 600
     featureColl = {},
     scale0 = 50000,
     tau = 2.0 * Math.PI;
@@ -15,15 +11,6 @@ var width = 860,
 var allPointsGeoJSON;
 var taxiSpotsLeaflet;
 var path;
-
-// var projection = d3.geoMercator()
-//     .center([-74.55, 40.95])
-//     .scale(scale0)
-//     .translate([0, 0]);
-
-// var path = d3.geoPath()
-//     .projection(projection)
-//     .pointRadius(.7);
 
 function toGeoJSON(datum, key) {
     var lat = datum[key == "pickup" ? PICK_LAT : DROP_LAT],
@@ -37,29 +24,6 @@ function toGeoJSON(datum, key) {
         "geometry": {"type": "Point", "coordinates": [lng, lat]},
         "properties": {"type": key}
     };
-}
-
-function initSVG(){
-    mapSVG = d3.select("body")
-        .append("svg")
-        .attr("width", width)
-        .attr("height", height)
-        .attr("class", "boroughs");
-
-    mapG = mapSVG.append("g").attr("class", "map").attr("id", "map");
-}
-
-var centered;
-
-function loadMap(){
-    d3.json(nyc_geojson_path, function(error, nycGeoJson) {
-        mapG.selectAll("#nyc-state")
-            .data(nycGeoJson.features)
-            .enter()
-            .append("path")
-            .attr("id", "nyc-state")
-            .attr("d", path);
-    });
 }
 
 function colorPoints(d) {
@@ -184,9 +148,7 @@ function loadLeaflet() {
     leafletG = leafletSvg.append("g").attr("class", "leaflet-zoom-hide");
 }
 
-function initMap(){
-    //initSVG();
-    //loadMap();
+function initMap() {
     loadLeaflet();
     loadTaxiSpots();
 }
