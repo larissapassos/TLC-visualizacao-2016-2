@@ -18,10 +18,14 @@
             <label><input type="radio" name="trip_category" value="pickups" checked> Pickups</label>
             <label><input type="radio" name="trip_category" value="dropoffs"> Dropoffs</label><br>
         </form>
+        <form id="tc" action="">
+            <label><input type="radio" name="cab_category" value="../assets/tlc/green/green.json" checked> Green</label>
+            <label><input type="radio" name="cab_category" value="../assets/tlc/yellow/yellow.json"> Yellow</label><br>
+        </form>
         <div id="map">
             <div id="leaflet"></div>
         </div>
-        <div id="views">
+        <div id="views"></div>
         <script src="constants.js"></script>
         <script src="line_plot.js"></script>
         <script src="histogram.js"></script>

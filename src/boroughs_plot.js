@@ -12,6 +12,7 @@ var taxiSpotsLeaflet;
 var path;
 
 var chosenTripCategory = "pickups";
+var chosenCabCategory = "../assets/tlc/green/green.json";
 
 function toGeoJSON(datum) {
     var lat_min = datum.region.lat_min,
@@ -72,7 +73,18 @@ function filterPointsByTripCategory() {
     })
 }
 
-function checkRadio() {
+function checkCabRadio() {
+    d3.selectAll("[name=cab_category]")
+      .on("change", change);
+
+    function change() {
+        chosenCabCategory = this.value;
+        loaded = false;
+        loadTaxiSpots();
+    }
+}
+
+function checkTripRadio() {
     d3.selectAll("[name=trip_category]")
       .on("change", change);
 
@@ -99,7 +111,7 @@ function drawTaxiSpots() {
 
 function loadTaxiSpots() {
     if (!loaded) {
-        d3.json("../assets/tlc/green/green.json", function(error, tlc) {
+        d3.json(chosenCabCategory, function(error, tlc) {
             if (error) throw error;
             loaded = true;
             selectedRect = [];
@@ -183,7 +195,8 @@ function loadLeaflet() {
 
 function initMap() {
     loadLeaflet();
-    checkRadio();
+    checkCabRadio();
+    checkTripRadio();
     loadTaxiSpots();
 }
 
