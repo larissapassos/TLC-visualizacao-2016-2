@@ -43,10 +43,10 @@ function plotPoints() {
             .attr("id", "taxi-spot")
             .style("fill", colorPoints)
             .style("fill-opacity", ".2");
-        
+
         bind.exit()
             .remove();
-            
+
         bind.attr("d", path)
             .style("fill", colorPoints)
             .style("fill-opacity", ".2");
@@ -68,7 +68,7 @@ function loadTaxiSpots(){
 
                 allPointsGeoJSON = selectedRect.slice();
                 loadedData = tlc.slice(1, tlc.length);
-                       
+
                 var transform = d3.geoTransform({point: projectPoint});
                 path = d3.geoPath().projection(transform);
 
@@ -106,7 +106,7 @@ function loadTaxiSpots(){
                 }
 
                 function getBounds() {
-                    var finalBounds = [[Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY], 
+                    var finalBounds = [[Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY],
                                        [Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY]];
                     allPointsGeoJSON.forEach(function(p) {
                         var b = path.bounds(p);
@@ -156,6 +156,7 @@ function init() {
     initMap();
     initHist();
     initLinePlot();
+    initStackedBarPlot();
 }
 
 init();

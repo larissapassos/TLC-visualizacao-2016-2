@@ -26,16 +26,16 @@ function renderLineChart() {
 
     var xAxis = d3.axisBottom(lxScale);
 
-    if(!chartXAxis) {       
+    if(!chartXAxis) {
         d3.select("#xAxis").call(xAxis);
         chartXAxis = true;
     } else {
         d3.select("#xAxis").transition().call(xAxis);
     }
 
-    var yAxis = d3.axisLeft(lyScale);   
+    var yAxis = d3.axisLeft(lyScale);
 
-    if(!chartYAxis) {       
+    if(!chartYAxis) {
         d3.select("#yAxis").call(yAxis);
         chartYAxis = true;
     } else {
@@ -53,7 +53,7 @@ function renderLineChart() {
     line = d3.line()
              .x(function(d) { return lxScale(d.day) + padding.inner; })
              .y(function(d) { return lyScale(d.count); });
-    
+
     var lineBind = svgChart.selectAll(".line")
                             .data([tripsPerDayArray]);
 
@@ -82,10 +82,10 @@ function renderLineChart() {
             .text(function(d) {
                 return "Green Cab Trips";
             });
-    
+
     lineBind.exit()
             .remove();
-    
+
     lineBind.transition()
             .attr("d", function(d) { return line(d); })
             .attr("fill", "none")
@@ -118,7 +118,7 @@ function readCsv() {
             console.time('drawing svg');
             renderLineChart();
             console.timeEnd('drawing svg');
-    });
+        });
     }
 }
 

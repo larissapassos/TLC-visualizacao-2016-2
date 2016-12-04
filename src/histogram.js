@@ -26,7 +26,7 @@ function groupTrips() {
 function renderHistogram() {
     if (loaded) {
         var tripsPerDayHist = groupTrips();
-    
+
         var tripsArray = [];
         Object.keys(tripsPerDayHist).forEach(function(day) {
             tripsArray.push({'day': day, 'count': tripsPerDayHist[day]});
@@ -36,14 +36,13 @@ function renderHistogram() {
         var x = d3.scalePoint()
                     .domain(Object.keys(tripsPerDayHist))
                     .range([0, wHist - marginHist.right]);
-        
+
         var y = d3.scaleLinear()
                     .domain([0, d3.max(tripsArray, function(d) { return d.count; })])
                     .range([hHist, 0]);
-        
-        var histBind = histSvg.selectAll("rect")
-                                .data(tripsArray);
-        
+
+        var histBind = histSvg.selectAll("rect").data(tripsArray);
+
         // insertion
         histBind.enter()
             .append("rect")
@@ -64,7 +63,7 @@ function renderHistogram() {
         // removal
         histBind.exit()
                 .remove();
-        
+
         // update
         histBind.transition()
             .attr("x", function(d, i) {
@@ -80,14 +79,14 @@ function renderHistogram() {
             .attr("fill", "blue")
             .attr("stroke-width", "1px")
             .attr("stroke","black");
-        
+
         var xAxisHist = d3.axisBottom(x).tickFormat(function(d) { return prettyDay(d); });
-        
+
         if (!histXAxis) {
             histSvg.append("g")
-                    .attr("id","xAxisHist")
-                    .attr("transform","translate(0," + hHist + ")")
-                    .call(xAxisHist);
+                .attr("id","xAxisHist")
+                .attr("transform","translate(0," + hHist + ")")
+                .call(xAxisHist);
             histXAxis = true;
         }
 
@@ -136,6 +135,6 @@ function initHist() {
                 .attr("class", "hist")
                 .append("g")
                     .attr("transform", "translate(" + marginHist.left + "," + marginHist.top + ")");
-    
+
     readData();
 }
