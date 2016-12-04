@@ -1,7 +1,12 @@
-var PICK_LAT = "Pickup_latitude",
-    PICK_LNG = "Pickup_longitude",
-    DROP_LAT = "Dropoff_latitude",
-    DROP_LNG = "Dropoff_longitude";
+// var PICK_LAT = "Pickup_latitude",
+//     PICK_LNG = "Pickup_longitude",
+//     DROP_LAT = "Dropoff_latitude",
+//     DROP_LNG = "Dropoff_longitude";
+
+var LAT_MIN = "regions.lat_min",
+    LAT_MAX = "regions.lat_max",
+    LNG_MIN = "regions.lng_min",
+    LNG_MAX = "regions.lng_max";
 
 var loaded = false;
 var loadedData;
