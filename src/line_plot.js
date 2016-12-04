@@ -1,7 +1,7 @@
 var margin = {top: 10, right: 20, bottom: 10, left: 20};
 var padding = {outer: 20, inner: 50};
-var w = 500 - margin.left - margin.right;
-var h = 500 - margin.top - margin.bottom;
+var w = 400 - margin.left - margin.right;
+var h = 300 - margin.top - margin.bottom;
 var svgChart;
 
 //var csv_path = "../assets/tlc/green/green_tripdata_2016-06.csv";
@@ -123,9 +123,10 @@ function readCsv() {
 }
 
 function createLineChartSvg() {
-    svgChart = d3.select("body")
+    svgChart = d3.select("#views")
             .append("svg")
             .attrs({
+                id : "line",
                 width : w + margin.left + margin.right,
                 height: h + margin.top + margin.bottom,
                 transform : "translate(" + margin.left + "," + margin.top + ")"

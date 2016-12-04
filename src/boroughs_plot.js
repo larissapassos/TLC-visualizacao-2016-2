@@ -2,9 +2,7 @@ var leaflet;
 var leafletSvg;
 var leafletG;
 
-var width = 860,
-    height = 600
-    featureColl = {},
+var featureColl = {},
     scale0 = 50000,
     tau = 2.0 * Math.PI;
 
@@ -58,6 +56,7 @@ function plotPoints() {
 function loadTaxiSpots(){
     if (!loaded) {
         d3.csv("../assets/tlc/green/subset2.csv", function(error, tlc){
+            if (error) throw error;
             if(!loaded) {
                 loaded = true;
                 selectedRect = [];
@@ -100,7 +99,7 @@ function loadTaxiSpots(){
                         height : bottomRight[1] - topLeft[1]
                     })
                     .style("left", topLeft[0] + "px")
-                    .style("top", topLeft[1] + "px");
+                    .style("top", topLeft[1] + "px")
 
                     leafletG.attr("transform", "translate(" + -topLeft[0] + "," + -topLeft[1] + ")");
                     taxiSpotsLeaflet.attr("d", path);
