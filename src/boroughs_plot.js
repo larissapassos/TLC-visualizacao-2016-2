@@ -156,7 +156,7 @@ function init() {
     initMap();
     initHist();
     initLinePlot();
-    initStackedBarPlot();
+    initPie();
 }
 
 init();
