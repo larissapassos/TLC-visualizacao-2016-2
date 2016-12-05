@@ -8,6 +8,8 @@ var LAT_MIN = "regions.lat_min",
     LNG_MIN = "regions.lng_min",
     LNG_MAX = "regions.lng_max";
 
+var OPACITY = 0.5;
+
 var loaded = false;
 var loadedData;
 var selectedRect;

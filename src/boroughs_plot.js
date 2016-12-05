@@ -2,10 +2,6 @@ var leaflet;
 var leafletSvg;
 var leafletG;
 
-var featureColl = {},
-    scale0 = 50000,
-    tau = 2.0 * Math.PI;
-
 var allPointsGeoJSON;
 var filteredPointsGeoJSON = [];
 var taxiSpotsLeaflet;
@@ -39,8 +35,8 @@ function toGeoJSON(datum) {
     };
 }
 
-function colorPoints(d) {
-    return "red";
+function colorPoint(d, colorScale) {
+    return colorScale(d["properties"][chosenTripCategory]);
 }
 
 function plotPoints() {
@@ -52,15 +48,15 @@ function plotPoints() {
             .append("path")
             .attr("d", path)
             .attr("id", "taxi-spot")
-            .style("fill", colorPoints)
-            .style("fill-opacity", ".2");
+            .style("fill", colorPoint)
+            .style("fill-opacity", OPACITY);
         
         bind.exit()
             .remove();
             
         bind.attr("d", path)
-            .style("fill", colorPoints)
-            .style("fill-opacity", ".2");
+            .style("fill", colorPoint)
+            .style("fill-opacity", OPACITY);
     }
 }
 
@@ -96,6 +92,13 @@ function checkTripRadio() {
 }
 
 function drawTaxiSpots() {
+    var maxValue = d3.max(filteredPointsGeoJSON, function(p) { 
+        return p["properties"][chosenTripCategory];
+    });
+
+    var color = d3.scaleSequential(d3.interpolateRdYlBu)
+                  .domain([maxValue, 1.0]);
+
     leafletG.selectAll("#taxi-spot")
             .remove();
 
@@ -104,8 +107,10 @@ function drawTaxiSpots() {
                                .enter()
                                .append("path")
                                .attr("id", "taxi-spot")
-                               .style("fill", colorPoints)
-                               .style("fill-opacity", ".2");
+                               .style("fill", function(d) {
+                                   return colorPoint(d, color);
+                               })
+                               .style("fill-opacity", OPACITY);
     updateLeaflet();
 }
 
