@@ -251,7 +251,8 @@ def main(argv):
             cab_type = "yellow" if "yellow" in tlc_file else "green"
             reader = csv.DictReader(csvfile)
             print "Parsing rows"
-            for row in reader:
+            for i, row in enumerate(reader):
+                if i % 10000 == 0: print "row: %d" % i
                 parse_row(row, cab_type)
         calculate_averages()
         write_data(cab_type)
