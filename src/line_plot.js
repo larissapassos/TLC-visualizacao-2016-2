@@ -105,7 +105,6 @@ function getTripsPerDay() {
             });
         }
     });
-    console.log(tripsPerDay);
 }
 
 function initLinePlot() {
