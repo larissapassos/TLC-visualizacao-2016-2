@@ -4,9 +4,6 @@ var w = 400 - margin.left - margin.right;
 var h = 300 - margin.top - margin.bottom;
 var svgChart;
 
-//var csv_path = "../assets/tlc/green/green_tripdata_2016-06.csv";
-var csv_path = "../assets/tlc/green/subset2.csv";
-
 var tripsPerDay = {};
 
 var chartXAxis = false;
@@ -14,7 +11,7 @@ var chartYAxis = false;
 
 function renderLineChart() {
     getTripsPerDay();
-
+    
     var lxScale = d3.scalePoint()
                     .domain(Object.keys(tripsPerDay))
                     .range([padding.outer, w - padding.outer]);
@@ -94,30 +91,30 @@ function renderLineChart() {
 }
 
 function getTripsPerDay() {
-    var timeParser = d3.timeParse("%Y-%m-%d %H:%M:%S");
-    tripsPerDay = {};
+    tripsPerDay = {}
+    var cat = (chosenTripCategory === "pickups") ? "pickups_day_month" :
+                                                   "dropoffs_day_month";
     selectedData.forEach(function(d) {
-            var day = timeParser(d.lpep_pickup_datetime).getDate();
-            if (day in tripsPerDay) {
-                tripsPerDay[day]++;
-            } else {
-                tripsPerDay[day] = 1;
-            }
+        if (d[cat]) {
+            Object.keys(d[cat]).forEach(function(day) {
+                if (day in tripsPerDay) {
+                    tripsPerDay[day] += d[cat][day];
+                } else {
+                    tripsPerDay[day] = d[cat][day];
+                }
+            });
+        }
     });
 }
 
-function readCsv() {
+function initLinePlot() {
     if (!loaded) {
-        console.time('loading svg');
-        d3.csv(csv_path, function(data) {
+        d3.json(chosenCabCategory, function(data) {
             loadedData = data.slice(1, data.length);
             selectedData = loadedData.slice();
             loaded = true;
-            console.timeEnd('loading svg');
 
-            console.time('drawing svg');
             renderLineChart();
-            console.timeEnd('drawing svg');
     });
     }
 }
@@ -143,9 +140,4 @@ function createLineChartSvg() {
     svgChart.append("g")
             .attr("id","yAxis")
             .attr("transform","translate(" + (padding.inner + margin.left) + ",0)");
-}
-
-function initLinePlot() {
-    createLineChartSvg();
-    readCsv();
 }

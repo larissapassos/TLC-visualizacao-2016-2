@@ -143,6 +143,9 @@ function readHistData() {
             loaded = true;
             renderHistogram();
         });
+    } else {
+        console.log("OI");
+        renderHistogram();
     }
 }
 

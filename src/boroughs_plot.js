@@ -87,6 +87,7 @@ function checkCabRadio() {
         loaded = false;
         loadTaxiSpots();
         readHistData();
+        initLinePlot();
     }
 }
 
@@ -101,6 +102,7 @@ function checkTripRadio() {
         selectedRect = allPointsGeoJSON;
         drawTaxiSpots();
         renderHistogram();
+        renderLineChart();
     }
 }
 
@@ -203,7 +205,7 @@ function loadLeaflet() {
         function redraw() {
             plotPoints();
             renderHistogram();
-            // renderLineChart();
+            renderLineChart();
         }
     });
 
@@ -221,7 +223,8 @@ function initMap() {
 function init() {
     initMap();
     initHist();
-    // initLinePlot();
+    createLineChartSvg();
+    initLinePlot();
 }
 
 init();
