@@ -16,16 +16,16 @@ from datetime import datetime
     "dropoffs_hour": {},
     "dropoffs_day_week": {},
     "dropoffs_day_month": {},
-    "average_price": float,
-    "average_tip": float,
+    "average_price": {},
+    "average_tip": {},
     "passenger_count":{},
 }
 """
 
 keys = {"green": {'pickup_date': 'lpep_pickup_datetime', 'dropoff_date': 'Lpep_dropoff_datetime', 'fare': 'Fare_amount', 'tip': 'Tip_amount', 'passengers': 'Passenger_count',
-                  'pickup_lat': 'Pickup_latitude', 'pickup_lng': 'Pickup_longitude', 'dropoff_lat': 'Dropoff_latitude', 'dropoff_lng': 'Dropoff_longitude'}, 
+                  'pickup_lat': 'Pickup_latitude', 'pickup_lng': 'Pickup_longitude', 'dropoff_lat': 'Dropoff_latitude', 'dropoff_lng': 'Dropoff_longitude'},
         "yellow": {'pickup_date': 'tpep_pickup_datetime', 'dropoff_date': 'tpep_dropoff_datetime', 'fare': 'fare_amount', 'tip': 'tip_amount', 'passengers': 'passenger_count',
-                  'pickup_lat': 'pickup_latitude', 'pickup_lng': 'pickup_longitude', 'dropoff_lat': 'dropoff_latitude', 'dropoff_lng': 'dropoff_longitude'}}
+                   'pickup_lat': 'pickup_latitude', 'pickup_lng': 'pickup_longitude', 'dropoff_lat': 'dropoff_latitude', 'dropoff_lng': 'dropoff_longitude'}}
 
 MAX_NYC_LAT = 40.9746818542
 MIN_NYC_LAT = 40.477222222222224
@@ -78,7 +78,8 @@ def populate_pickup_data(i, j, row, cab_type):
     except KeyError:
         aggregated_data[i][j]['pickups'] = 1
 
-    date = datetime.strptime(row[keys[cab_type]['pickup_date']], '%Y-%m-%d %H:%M:%S')
+    date = datetime.strptime(
+        row[keys[cab_type]['pickup_date']], '%Y-%m-%d %H:%M:%S')
 
     # pickups_hour
     hour = date.hour
@@ -132,18 +133,6 @@ def populate_dropoff_data(i, j, row, cab_type):
     except KeyError:
         aggregated_data[i][j]['dropoffs'] = 1
 
-    # average_price
-    try:
-        aggregated_data[i][j]['average_price'] += float(row[keys[cab_type]['fare']])
-    except KeyError:
-        aggregated_data[i][j]['average_price'] = float(row[keys[cab_type]['fare']])
-
-    # average_tip
-    try:
-        aggregated_data[i][j]['average_tip'] += float(row[keys[cab_type]['tip']])
-    except KeyError:
-        aggregated_data[i][j]['average_tip'] = float(row[keys[cab_type]['tip']])
-
     # passenger_count:
     if 'passenger_count' not in aggregated_data[i][j]:
         aggregated_data[i][j]['passenger_count'] = {}
@@ -153,8 +142,9 @@ def populate_dropoff_data(i, j, row, cab_type):
         aggregated_data[i][j]['passenger_count'][passenger_count] += 1
     except KeyError:
         aggregated_data[i][j]['passenger_count'][passenger_count] = 1
-    
-    date = datetime.strptime(row[keys[cab_type]['dropoff_date']], '%Y-%m-%d %H:%M:%S')
+
+    date = datetime.strptime(
+        row[keys[cab_type]['dropoff_date']], '%Y-%m-%d %H:%M:%S')
 
     # dropoffs_hour
     hour = date.hour
@@ -175,6 +165,28 @@ def populate_dropoff_data(i, j, row, cab_type):
         aggregated_data[i][j]['dropoffs_day_week'][week_day] += 1
     except KeyError:
         aggregated_data[i][j]['dropoffs_day_week'][week_day] = 1
+
+    # average_price
+    if 'average_price' not in aggregated_data[i][j]:
+        aggregated_data[i][j]['average_price'] = {}
+
+    try:
+        aggregated_data[i][j]['average_price'][
+            week_day] += float(row[keys[cab_type]['fare']])
+    except KeyError:
+        aggregated_data[i][j]['average_price'][
+            week_day] = float(row[keys[cab_type]['fare']])
+
+    # average_tip
+    if 'average_tip' not in aggregated_data[i][j]:
+        aggregated_data[i][j]['average_tip'] = {}
+
+    try:
+        aggregated_data[i][j]['average_tip'][
+            week_day] += float(row[keys[cab_type]['tip']])
+    except KeyError:
+        aggregated_data[i][j]['average_tip'][
+            week_day] = float(row[keys[cab_type]['tip']])
 
     # dropoffs_day_month
     day = date.day
@@ -204,11 +216,13 @@ def calculate_averages():
     for i in aggregated_data:
         for j in aggregated_data[i]:
             if 'average_price' in aggregated_data[i][j]:
-                aggregated_data[i][j]['average_price'] = float(
-                    aggregated_data[i][j]['average_price']) / aggregated_data[i][j]['dropoffs']
+                for week_day in aggregated_data[i][j]['average_price']:
+                    aggregated_data[i][j]['average_price'][week_day] = float(aggregated_data[i][j][
+                                                                             'average_price'][week_day]) / aggregated_data[i][j]['dropoffs_day_week'][week_day]
             if 'average_tip' in aggregated_data[i][j]:
-                aggregated_data[i][j]['average_tip'] = float(
-                    aggregated_data[i][j]['average_tip']) / aggregated_data[i][j]['dropoffs']
+                for week_day in aggregated_data[i][j]['average_tip']:
+                    aggregated_data[i][j]['average_tip'][week_day] = float(aggregated_data[i][j][
+                                                                           'average_tip'][week_day]) / aggregated_data[i][j]['dropoffs_day_week'][week_day]
 
 
 def write_data(cab_type):
