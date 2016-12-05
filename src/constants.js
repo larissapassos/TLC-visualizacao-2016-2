@@ -1,7 +1,7 @@
-var LAT_MIN = "regions.lat_min",
-    LAT_MAX = "regions.lat_max",
-    LNG_MIN = "regions.lng_min",
-    LNG_MAX = "regions.lng_max";
+var LAT_MIN = "region.lat_min",
+    LAT_MAX = "region.lat_max",
+    LNG_MIN = "region.lng_min",
+    LNG_MAX = "region.lng_max";
 
 var OPACITY = 0.5;
 
@@ -21,13 +21,16 @@ function isInsideRect(coords, rect) {
 
 function filterPoints(points, rect) {
     if (points) {
+        // console.log(points[0].geometry.coordinates[0])
         selectedRect = points.filter(function(d) {
             return isInsideRect(d.geometry.coordinates[0], rect);
         });
     }
 
+    console.log(selectedData[0])
     selectedData = loadedData.filter(function(d) {
-        var coords = [ [d[LNG_MIN], d[LAT_MIN]], [], [d[LNG_MAX], d[LAT_MAX]] ];
+        var coords = [ [d.region.lng_min, d.region.lat_min], [], [d.region.lng_max, d.region.lat_max] ];
         return isInsideRect(coords, rect);
     });
+    console.log(selectedData)
 }

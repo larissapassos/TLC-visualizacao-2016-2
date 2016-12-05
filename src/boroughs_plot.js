@@ -86,6 +86,7 @@ function checkCabRadio() {
         chosenCabCategory = this.value;
         loaded = false;
         loadTaxiSpots();
+        initLinePlot();
     }
 }
 
@@ -99,6 +100,7 @@ function checkTripRadio() {
         selectedData = rawTripData;
         selectedRect = allPointsGeoJSON;
         drawTaxiSpots();
+        renderLineChart();
     }
 }
 
@@ -133,8 +135,7 @@ function loadTaxiSpots() {
             loaded = true;
             selectedRect = [];
 
-            tlc.slice(1, tlc.length).forEach(function(datum){
-                selectedRect.push(toGeoJSON(datum));
+            tlc.forEach(function(datum){
                 selectedRect.push(toGeoJSON(datum));
             })
 
@@ -202,7 +203,7 @@ function loadLeaflet() {
         function redraw() {
             plotPoints();
             // renderHistogram();
-            // renderLineChart();
+            renderLineChart();
         }
     });
 
@@ -220,7 +221,8 @@ function initMap() {
 function init() {
     initMap();
     // initHist();
-    // initLinePlot();
+    createLineChartSvg();
+    initLinePlot();
 }
 
 init();
