@@ -6,6 +6,7 @@ var allPointsGeoJSON;
 var filteredPointsGeoJSON = [];
 var taxiSpotsLeaflet;
 var path;
+var color;
 
 var chosenTripCategory = "pickups";
 var chosenCabCategory = "../assets/tlc/green/green.json";
@@ -36,7 +37,9 @@ function toGeoJSON(datum) {
 }
 
 function colorPoint(d, colorScale) {
-    return colorScale(d["properties"][chosenTripCategory]);
+    return selectedRect.indexOf(d) > -1 ?
+        colorScale(d["properties"][chosenTripCategory]) :
+        "gray";
 }
 
 function plotPoints() {
@@ -48,14 +51,18 @@ function plotPoints() {
             .append("path")
             .attr("d", path)
             .attr("id", "taxi-spot")
-            .style("fill", colorPoint)
+            .style("fill", function(d) {
+                return colorPoint(d, color);
+            })
             .style("fill-opacity", OPACITY);
         
         bind.exit()
             .remove();
             
         bind.attr("d", path)
-            .style("fill", colorPoint)
+            .style("fill", function(d) {
+                return colorPoint(d, color);
+            })
             .style("fill-opacity", OPACITY);
     }
 }
@@ -96,7 +103,7 @@ function drawTaxiSpots() {
         return p["properties"][chosenTripCategory];
     });
 
-    var color = d3.scaleSequential(d3.interpolateRdYlBu)
+    color = d3.scaleSequential(d3.interpolateRdYlBu)
                   .domain([maxValue, 1.0]);
 
     leafletG.selectAll("#taxi-spot")
@@ -189,8 +196,8 @@ function loadLeaflet() {
 
         function redraw() {
             plotPoints();
-            renderHistogram();
-            renderLineChart();
+            // renderHistogram();
+            // renderLineChart();
         }
     });
 
