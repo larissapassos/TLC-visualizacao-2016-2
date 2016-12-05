@@ -13,22 +13,25 @@ from datetime import datetime
     "pickups_hour": {},
     "pickups_day_week": {},
     "pickups_day_month": {},
+    "dropoffs_hour": {},
+    "dropoffs_day_week": {},
+    "dropoffs_day_month": {},
     "average_price": float,
     "average_tip": float,
     "passenger_count":{},
 }
 """
 
-keys = {"green": {'pickup_date': 'lpep_pickup_datetime', 'fare': 'Fare_amount', 'tip': 'Tip_amount', 'passengers': 'Passenger_count',
+keys = {"green": {'pickup_date': 'lpep_pickup_datetime', 'dropoff_date': 'Lpep_dropoff_datetime', 'fare': 'Fare_amount', 'tip': 'Tip_amount', 'passengers': 'Passenger_count',
                   'pickup_lat': 'Pickup_latitude', 'pickup_lng': 'Pickup_longitude', 'dropoff_lat': 'Dropoff_latitude', 'dropoff_lng': 'Dropoff_longitude'}, 
-        "yellow": {'pickup_date': 'tpep_pickup_datetime', 'fare': 'fare_amount', 'tip': 'tip_amount', 'passengers': 'passenger_count',
+        "yellow": {'pickup_date': 'tpep_pickup_datetime', 'dropoff_date': 'tpep_dropoff_datetime', 'fare': 'fare_amount', 'tip': 'tip_amount', 'passengers': 'passenger_count',
                   'pickup_lat': 'pickup_latitude', 'pickup_lng': 'pickup_longitude', 'dropoff_lat': 'dropoff_latitude', 'dropoff_lng': 'dropoff_longitude'}}
 
 MAX_NYC_LAT = 40.9746818542
 MIN_NYC_LAT = 40.477222222222224
 MAX_NYC_LNG = -73.1048431396
 MIN_NYC_LNG = -74.25888888888889
-NUM_BOXES_SIDE = 100
+NUM_BOXES_SIDE = 200
 LAT_INTERVAL = (MAX_NYC_LAT - MIN_NYC_LAT) / NUM_BOXES_SIDE
 LNG_INTERVAL = (MAX_NYC_LNG - MIN_NYC_LNG) / NUM_BOXES_SIDE
 
@@ -121,7 +124,7 @@ def populate_dropoff_data(i, j, row, cab_type):
         aggregated_data[i] = {}
 
     if j not in aggregated_data[i]:
-        aggregated_data[i][j] = {'regions': regions[i][j]}
+        aggregated_data[i][j] = {'region': regions[i][j]}
 
     # dropoff count
     try:
@@ -150,6 +153,38 @@ def populate_dropoff_data(i, j, row, cab_type):
         aggregated_data[i][j]['passenger_count'][passenger_count] += 1
     except KeyError:
         aggregated_data[i][j]['passenger_count'][passenger_count] = 1
+    
+    date = datetime.strptime(row[keys[cab_type]['dropoff_date']], '%Y-%m-%d %H:%M:%S')
+
+    # dropoffs_hour
+    hour = date.hour
+    if 'dropoffs_hour' not in aggregated_data[i][j]:
+        aggregated_data[i][j]['dropoffs_hour'] = {}
+
+    try:
+        aggregated_data[i][j]['dropoffs_hour'][hour] += 1
+    except KeyError:
+        aggregated_data[i][j]['dropoffs_hour'][hour] = 1
+
+    # dropoffs_day_week
+    week_day = datetime.weekday(date)
+    if 'dropoffs_day_week' not in aggregated_data[i][j]:
+        aggregated_data[i][j]['dropoffs_day_week'] = {}
+
+    try:
+        aggregated_data[i][j]['dropoffs_day_week'][week_day] += 1
+    except KeyError:
+        aggregated_data[i][j]['dropoffs_day_week'][week_day] = 1
+
+    # dropoffs_day_month
+    day = date.day
+    if 'dropoffs_day_month' not in aggregated_data[i][j]:
+        aggregated_data[i][j]['dropoffs_day_month'] = {}
+
+    try:
+        aggregated_data[i][j]['dropoffs_day_month'][day] += 1
+    except KeyError:
+        aggregated_data[i][j]['dropoffs_day_month'][day] = 1
 
 
 def parse_row(row, cab_type):
