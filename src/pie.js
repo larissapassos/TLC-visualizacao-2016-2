@@ -9,10 +9,10 @@ var outerRadius = 120,
 var pieSvg;
 var shouldBuildLegend = true;
 var arc = d3.arc().innerRadius(innerRadius).outerRadius(outerRadius);
-
+var pieColorScale = d3.scaleOrdinal().domain([0,1,2,3,4,5,6,7,8,9]).range(d3.schemeCategory20);
 var barWidth = 40;
 var csv_path_Pie = "../assets/tlc/green/subset2.csv";
-
+var arcsData = {};
 var pieXAxis = false;
 var pieYAxis = false;
 
@@ -48,53 +48,71 @@ function readPieData() {
 
 function buildPieLegend() {
     shouldBuildLegend = false;
-    var keys = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    var keys = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-    var c = d3.scaleOrdinal()
-        .domain(keys)
-        .range(d3.schemeCategory20);
+    var pieLegendSVG = d3.select("#views")
+        .append("svg")
+        .attrs({
+            id : "pieLegend",
+            width : 140, height: 300,
+            transform : "translate(" + marginPie.left + "," + marginPie.top + ")"
+        })
+        .attr("class", "pieLegend")
+        .append("g")
+        .attr("transform", "translate(" + marginPie.left + "," + marginPie.top + ")");
 
-    pieSvg
-        .selectAll("#pieLegend").data(keys)
+    pieLegendSVG
+        .selectAll("#pieLegendRect").data(keys)
         .enter().append("rect")
-        .attr("id", "pieLegend")
-        .attr("x", wPie - 18)
+        .attr("id", "pieLegendRect")
+        .attr("x", 18)
         .attr("width", 18)
-        .attr("height", 18)
-        .attr("transform", function(d,i){ return "translate(0, " + (i*20) + ")" })
-        .style("fill", c)
+        .attr("height", 20)
+        .attr("transform", function(d,i){ return "translate(0, " + i*25 + ")" })
+        .style("fill", pieColorScale)
+
+    pieLegendSVG
+        .selectAll("#pieLegendText").data(keys)
+        .enter().append("text")
+        .attr("id", "pieLegendText")
+        .attr("x", 45)
+        .attr("width", 18)
+        .attr("height", 20)
+        .attr("transform", function(d,i){ return "translate(0, " + (i*25 + 15) + ")" })
+        .text(d => d + " passenger(s)")
+        .style("fill", pieColorScale)
+        .style("font", "12px sans-serif");
+
 }
 
 function renderPie() {
     console.log("render pie");
     var tmp = selectedData.map(d => d.passenger_count);
-    var data = {1: 0, 2: 0, 3: 0, 4: 0, 5:0, 6: 0, 7: 0, 8: 0, 9: 0};
+    var data = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5:0, 6: 0, 7: 0, 8: 0, 9: 0};
     if (shouldBuildLegend) { buildPieLegend(); }
 
     for (var i = 0; i < tmp.length; i++) {
         var curr = tmp[i];
         for (var key in curr) {
-            if (key != 0) data[key] += curr[key];
+            if (key > 0 && key < 10) data[key] += curr[key];
         }
     }
-    var arcsData = d3.pie()(Object.values(data));
+    arcsData = d3.pie()(Object.values(data));
     var keys = Object.keys(data);
 
-    var c = d3.scaleOrdinal()
-        .domain(keys)
-        .range(d3.schemeCategory20);
     var pathBind = pieSvg.selectAll("#piePath").data(arcsData);
     pathBind.exit().remove();
 
     pathBind.enter().append("path")
         .attr("id", "piePath")
         .attr("d", arc)
-        .style("fill", function(d, i){ return c(i); });
+        .style("fill", function(d, i){ return pieColorScale(i); });
+
     pathBind.transition()
         .duration(1000)
         .attr("id", "piePath")
         .attr("d", arc)
-        .style("fill", function(d, i){ return c(i); });
+        .style("fill", function(d, i){ return pieColorScale(i); });
 }
 
 // function arcTween(newAngle) {
