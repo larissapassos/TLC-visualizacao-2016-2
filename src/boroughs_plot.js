@@ -31,7 +31,7 @@ function toGeoJSON(datum) {
             [lng_max, lat_min],
             [lng_min, lat_min] ]
         ]},
-        "properties": { 
+        "properties": {
             "pickups" : pickups,
             "dropoffs" : dropoffs
         }
@@ -57,10 +57,10 @@ function plotPoints() {
                 return colorPoint(d, color);
             })
             .style("fill-opacity", OPACITY);
-        
+
         bind.exit()
             .remove();
-            
+
         bind.attr("d", path)
             .style("fill", function(d) {
                 return colorPoint(d, color);
@@ -88,6 +88,7 @@ function checkCabRadio() {
         loadTaxiSpots();
         readHistData();
         initLinePlot();
+        renderPie();
     }
 }
 
@@ -107,7 +108,7 @@ function checkTripRadio() {
 }
 
 function drawTaxiSpots() {
-    var maxValue = d3.max(filteredPointsGeoJSON, function(p) { 
+    var maxValue = d3.max(filteredPointsGeoJSON, function(p) {
         return p["properties"][chosenTripCategory];
     });
 
@@ -176,7 +177,7 @@ function updateLeaflet() {
 }
 
 function getBounds() {
-    var finalBounds = [[Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY], 
+    var finalBounds = [[Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY],
                        [Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY]];
     filteredPointsGeoJSON.forEach(function(p) {
         var b = path.bounds(p);
@@ -206,6 +207,7 @@ function loadLeaflet() {
             plotPoints();
             renderHistogram();
             renderLineChart();
+            renderPie();
         }
     });
 
@@ -225,6 +227,7 @@ function init() {
     initHist();
     createLineChartSvg();
     initLinePlot();
+    initPie();
 }
 
 init();
