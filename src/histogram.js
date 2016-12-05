@@ -27,7 +27,6 @@ function groupTrips() {
 }
 
 function renderHistogram() {
-    console.log("OI RENDER");
     if (loaded) {
         filterPointsByCategory();
         var tripsPerDayHist = groupTrips();
@@ -134,7 +133,6 @@ function filterPointsByCategory() {
 }
 
 function readHistData() {
-    console.log("OI READ");
     if (!loaded) {
         d3.json(chosenCabCategory, function(error, data) {
             if (error) throw error;
