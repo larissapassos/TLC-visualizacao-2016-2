@@ -4,8 +4,6 @@ var hHist = 300 - marginHist.top - marginHist.bottom;
 var histSvg;
 
 var barWidth = 40;
-var hist_chosenTripCategory = "pickups";
-var hist_chosenCabCategory = "../assets/tlc/green/green.json";
 
 var pickup_key = "pickups_day_week";
 var dropoff_key = "dropoffs_day_week";
@@ -29,6 +27,7 @@ function groupTrips() {
 }
 
 function renderHistogram() {
+    console.log("OI RENDER");
     if (loaded) {
         filterPointsByCategory();
         var tripsPerDayHist = groupTrips();
@@ -122,7 +121,7 @@ function renderHistogram() {
 function filterPointsByCategory() {
     hist_filteredPoints = [];
     selectedData.forEach(function(datum) {
-        if (hist_chosenTripCategory === "pickups") {
+        if (chosenTripCategory === "pickups") {
             if (datum[pickup_key]) {
                 hist_filteredPoints.push(datum[pickup_key]);
             }
@@ -135,8 +134,9 @@ function filterPointsByCategory() {
 }
 
 function readHistData() {
+    console.log("OI READ");
     if (!loaded) {
-        d3.json(hist_chosenCabCategory, function(error, data) {
+        d3.json(chosenCabCategory, function(error, data) {
             if (error) throw error;
             loadedData = data.slice();
             selectedData = loadedData.slice();
@@ -144,7 +144,6 @@ function readHistData() {
             renderHistogram();
         });
     } else {
-        console.log("OI");
         renderHistogram();
     }
 }
