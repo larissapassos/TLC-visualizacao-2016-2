@@ -1,8 +1,3 @@
-var LAT_MIN = "regions.lat_min",
-    LAT_MAX = "regions.lat_max",
-    LNG_MIN = "regions.lng_min",
-    LNG_MAX = "regions.lng_max";
-
 var OPACITY = 0.5;
 
 var loaded = false;
@@ -27,7 +22,7 @@ function filterPoints(points, rect) {
     }
 
     selectedData = loadedData.filter(function(d) {
-        var coords = [ [d[LNG_MIN], d[LAT_MIN]], [], [d[LNG_MAX], d[LAT_MAX]] ];
+        var coords = [ [d.region.lng_min, d.region.lat_min], [], [d.region.lng_max, d.region.lat_max] ];
         return isInsideRect(coords, rect);
     });
 }

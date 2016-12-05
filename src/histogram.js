@@ -4,27 +4,32 @@ var hHist = 300 - marginHist.top - marginHist.bottom;
 var histSvg;
 
 var barWidth = 40;
-var csv_path_hist = "../assets/tlc/green/subset2.csv";
+
+var pickup_key = "pickups_day_week";
+var dropoff_key = "dropoffs_day_week";
+var hist_filteredPoints = [];
 
 var histXAxis = false;
 var histYAxis = false;
 
 function prettyDay(day) {
-    var days = ["Sun.", "Mon.", "Tue.", "Wed.", "Thu.", "Fri.", "Sat."];
+    var days = ["Mon.", "Tue.", "Wed.", "Thu.", "Fri.", "Sat.", "Sun."];
     return days[day];
 }
 
 function groupTrips() {
-    var timeParser = d3.timeParse("%Y-%m-%d %H:%M:%S");
-    return selectedData.reduce(function(counts, curr) {
-                        var day = timeParser(curr.lpep_pickup_datetime).getDay();
-                        counts[day] ? counts[day]++ : counts[day] = 1;
-                            return counts;
+    return hist_filteredPoints.reduce(function(counts, curr) {
+                        Object.keys(curr).forEach(function(day) {
+                            counts[day] ? counts[day] += curr[day] : counts[day] = curr[day];
+                        });
+                        return counts;
                     }, {});
 }
 
 function renderHistogram() {
+    console.log("OI RENDER");
     if (loaded) {
+        filterPointsByCategory();
         var tripsPerDayHist = groupTrips();
     
         var tripsArray = [];
@@ -113,14 +118,33 @@ function renderHistogram() {
     }
 }
 
-function readData() {
+function filterPointsByCategory() {
+    hist_filteredPoints = [];
+    selectedData.forEach(function(datum) {
+        if (chosenTripCategory === "pickups") {
+            if (datum[pickup_key]) {
+                hist_filteredPoints.push(datum[pickup_key]);
+            }
+        } else {
+            if (datum[dropoff_key]) {
+                hist_filteredPoints.push(datum[dropoff_key]);
+            }
+        }
+    });
+}
+
+function readHistData() {
+    console.log("OI READ");
     if (!loaded) {
-        d3.csv(csv_path_hist, function(data) {
-            loadedData = data.slice(1, data.length);
+        d3.json(chosenCabCategory, function(error, data) {
+            if (error) throw error;
+            loadedData = data.slice();
             selectedData = loadedData.slice();
             loaded = true;
             renderHistogram();
         });
+    } else {
+        renderHistogram();
     }
 }
 
@@ -137,5 +161,5 @@ function initHist() {
                 .append("g")
                     .attr("transform", "translate(" + marginHist.left + "," + marginHist.top + ")");
     
-    readData();
+    readHistData();
 }

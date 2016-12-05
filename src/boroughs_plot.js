@@ -86,6 +86,8 @@ function checkCabRadio() {
         chosenCabCategory = this.value;
         loaded = false;
         loadTaxiSpots();
+        readHistData();
+        initLinePlot();
     }
 }
 
@@ -99,6 +101,8 @@ function checkTripRadio() {
         selectedData = rawTripData;
         selectedRect = allPointsGeoJSON;
         drawTaxiSpots();
+        renderHistogram();
+        renderLineChart();
     }
 }
 
@@ -133,13 +137,12 @@ function loadTaxiSpots() {
             loaded = true;
             selectedRect = [];
 
-            tlc.slice(1, tlc.length).forEach(function(datum){
-                selectedRect.push(toGeoJSON(datum));
+            tlc.forEach(function(datum){
                 selectedRect.push(toGeoJSON(datum));
             })
 
             allPointsGeoJSON = selectedRect.slice();
-            loadedData = tlc.slice(1, tlc.length);
+            loadedData = tlc.slice();
             filterPointsByTripCategory();
 
             var transform = d3.geoTransform({point: projectPoint});
@@ -201,8 +204,8 @@ function loadLeaflet() {
 
         function redraw() {
             plotPoints();
-            // renderHistogram();
-            // renderLineChart();
+            renderHistogram();
+            renderLineChart();
         }
     });
 
@@ -219,8 +222,9 @@ function initMap() {
 
 function init() {
     initMap();
-    // initHist();
-    // initLinePlot();
+    initHist();
+    createLineChartSvg();
+    initLinePlot();
 }
 
 init();
