@@ -8,6 +8,8 @@ var taxiSpotsLeaflet;
 var path;
 var color;
 
+var rawTripData;
+
 var chosenTripCategory = "pickups";
 var chosenCabCategory = "../assets/tlc/green/green.json";
 
@@ -94,6 +96,8 @@ function checkTripRadio() {
     function change() {
         chosenTripCategory = this.value;
         filterPointsByTripCategory();
+        selectedData = rawTripData;
+        selectedRect = allPointsGeoJSON;
         drawTaxiSpots();
     }
 }
@@ -125,6 +129,7 @@ function loadTaxiSpots() {
     if (!loaded) {
         d3.json(chosenCabCategory, function(error, tlc) {
             if (error) throw error;
+            rawTripData = tlc;
             loaded = true;
             selectedRect = [];
 
