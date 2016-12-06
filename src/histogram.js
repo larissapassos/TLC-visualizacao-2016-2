@@ -61,7 +61,7 @@ function renderHistogram() {
             .attr("height", function(d) {
                 return hHist - y(d.count);
             })
-            .attr("fill", "blue")
+            .attr("fill", "#9499c4")
             .attr("stroke-width", "1px")
             .attr("stroke","black");
 
@@ -81,7 +81,7 @@ function renderHistogram() {
             .attr("height", function(d) {
                 return hHist - y(d.count);
             })
-            .attr("fill", "blue")
+            .attr("fill", "#9499c4")
             .attr("stroke-width", "1px")
             .attr("stroke","black");
         

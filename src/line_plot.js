@@ -59,7 +59,7 @@ function renderLineChart() {
             .attr("class", "line")
             .attr("d", function(d) { return line(d); })
             .attr("fill", "none")
-            .style("stroke", "blue")
+            .style("stroke", "#9499c4")
             .attr("stroke-width", "3px")
             .on("mouseover", function(d) {
                 if (d3.event != null) {
