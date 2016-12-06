@@ -77,7 +77,7 @@ function renderLineChart() {
             })
             .append("title")
             .text(function(d) {
-                return "Green Cab Trips";
+                return "Cab Trips";
             });
     
     lineBind.exit()
