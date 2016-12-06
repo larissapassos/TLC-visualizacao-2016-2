@@ -89,6 +89,7 @@ function checkCabRadio() {
         readHistData();
         initLinePlot();
         renderPie();
+        renderFareChart();
     }
 }
 
@@ -104,6 +105,8 @@ function checkTripRadio() {
         drawTaxiSpots();
         renderHistogram();
         renderLineChart();
+        renderPie();
+        renderFareChart();
     }
 }
 
@@ -208,6 +211,7 @@ function loadLeaflet() {
             renderHistogram();
             renderLineChart();
             renderPie();
+            renderFareChart();
         }
     });
 
@@ -228,6 +232,7 @@ function init() {
     createLineChartSvg();
     initLinePlot();
     initPie();
+    initFareTip();
 }
 
 init();
