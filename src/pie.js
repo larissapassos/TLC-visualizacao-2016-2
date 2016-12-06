@@ -17,7 +17,7 @@ var pieXAxis = false;
 var pieYAxis = false;
 
 function initPie() {
-    pieSvg = d3.select("#views")
+    pieSvg = d3.select("#piechart")
         .append("svg")
         .attrs({
             id : "pie",
@@ -50,11 +50,11 @@ function buildPieLegend() {
     shouldBuildLegend = false;
     var keys = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-    var pieLegendSVG = d3.select("#views")
+    var pieLegendSVG = d3.select("#piechart")
         .append("svg")
         .attrs({
             id : "pieLegend",
-            width : 140, height: 300,
+            width : 100, height: 300,
             transform : "translate(" + marginPie.left + "," + marginPie.top + ")"
         })
         .attr("class", "pieLegend")
@@ -65,9 +65,9 @@ function buildPieLegend() {
         .selectAll("#pieLegendRect").data(keys)
         .enter().append("rect")
         .attr("id", "pieLegendRect")
-        .attr("x", 18)
-        .attr("width", 18)
-        .attr("height", 20)
+        .attr("x", 0)
+        .attr("width", 10)
+        .attr("height", 15)
         .attr("transform", function(d,i){ return "translate(0, " + i*25 + ")" })
         .style("fill", pieColorScale)
 
@@ -75,13 +75,12 @@ function buildPieLegend() {
         .selectAll("#pieLegendText").data(keys)
         .enter().append("text")
         .attr("id", "pieLegendText")
-        .attr("x", 45)
-        .attr("width", 18)
-        .attr("height", 20)
+        .attr("x", 15)
+        .attr("width", 50)
+        .attr("height", 15)
         .attr("transform", function(d,i){ return "translate(0, " + (i*25 + 15) + ")" })
-        .text(d => d + " passenger(s)")
-        .style("fill", pieColorScale)
-        .style("font", "12px sans-serif");
+        .text(d => d)
+        .style("fill", pieColorScale);
 
 }
 

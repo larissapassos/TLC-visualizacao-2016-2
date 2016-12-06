@@ -1,9 +1,9 @@
 var marginHist = {top: 20, right: 20, bottom: 40, left: 60};
-var wHist = 400 - marginHist.left - marginHist.right;
+var wHist = 600 - marginHist.left - marginHist.right;
 var hHist = 300 - marginHist.top - marginHist.bottom;
 var histSvg;
 
-var barWidth = 40;
+var barWidth = 50;
 
 var pickup_key = "pickups_day_week";
 var dropoff_key = "dropoffs_day_week";
@@ -13,7 +13,7 @@ var histXAxis = false;
 var histYAxis = false;
 
 function prettyDay(day) {
-    var days = ["Mon.", "Tue.", "Wed.", "Thu.", "Fri.", "Sat.", "Sun."];
+    var days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
     return days[day];
 }
 
@@ -147,7 +147,7 @@ function readHistData() {
 }
 
 function initHist() {
-    histSvg = d3.select("#views")
+    histSvg = d3.select("#histogram")
                 .append("svg")
                 .attrs({
                     id : "hist",

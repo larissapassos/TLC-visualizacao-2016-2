@@ -1,6 +1,6 @@
 var margin = {top: 10, right: 20, bottom: 10, left: 20};
 var padding = {outer: 20, inner: 50};
-var w = 400 - margin.left - margin.right;
+var w = 600 - margin.left - margin.right;
 var h = 300 - margin.top - margin.bottom;
 var svgChart;
 
@@ -120,7 +120,7 @@ function initLinePlot() {
 }
 
 function createLineChartSvg() {
-    svgChart = d3.select("#views")
+    svgChart = d3.select("#lineplot")
             .append("svg")
             .attrs({
                 id : "line",
