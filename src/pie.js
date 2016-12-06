@@ -85,7 +85,6 @@ function buildPieLegend() {
 }
 
 function renderPie() {
-    console.log("render pie");
     var tmp = selectedData.map(d => d.passenger_count);
     var data = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5:0, 6: 0, 7: 0, 8: 0, 9: 0};
     if (shouldBuildLegend) { buildPieLegend(); }
